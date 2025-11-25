@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Ligas (7 competiciones iniciales)
+model League {
+  id          Int      @id @default(autoincrement())
+  apiId       Int      @unique  // ID de API-Football
+  name        String
+  country     String
+  logo        String?
+  season      Int
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  matches     Match[]
+
+  @@index([active])
+}
+
+// Equipos
+model Team {
+  id          Int      @id @default(autoincrement())
+  apiId       Int      @unique
+  name        String
+  code        String?  // Ej: "BAR", "RMA"
+  logo        String?
+  country     String?
+  founded     Int?
+  venue       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  homeMatches Match[]  @relation("HomeTeam")
+  awayMatches Match[]  @relation("AwayTeam")
+  goals       Goal[]
+  cards       Card[]
+
+  @@index([country])
+}
+
+// Partidos (fixtures + resultados)
+model Match {
+  id            Int       @id @default(autoincrement())
+  apiId         Int       @unique
+  leagueId      Int
+  league        League    @relation(fields: [leagueId], references: [id])
+  homeTeamId    Int
+  homeTeam      Team      @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeamId    Int
+  awayTeam      Team      @relation("AwayTeam", fields: [awayTeamId], references: [id])
+
+  matchDate     DateTime
+  status        String    // "NS" (Not Started), "LIVE", "FT" (Full Time), etc
+  round         String?   // Ej: "Jornada 10", "Octavos de Final"
+
+  // Resultado
+  homeScore     Int?
+  awayScore     Int?
+
+  // Estadísticas básicas
+  venue         String?
+  referee       String?
+
+  goals         Goal[]
+  cards         Card[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([leagueId])
+  @@index([matchDate])
+  @@index([status])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+}
+
+// Goles
+model Goal {
+  id          Int      @id @default(autoincrement())
+  matchId     Int
+  match       Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId      Int
+  team        Team     @relation(fields: [teamId], references: [id])
+
+  playerName  String
+  minute      Int
+  extraTime   Int?     // Minutos adicionales (ej: 45+2)
+  type        String   // "Normal", "Penalty", "Own Goal"
+
+  createdAt   DateTime @default(now())
+
+  @@index([matchId])
+  @@index([teamId])
+}
+
+// Tarjetas
+model Card {
+  id          Int      @id @default(autoincrement())
+  matchId     Int
+  match       Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId      Int
+  team        Team     @relation(fields: [teamId], references: [id])
+
+  playerName  String
+  minute      Int
+  type        String   // "Yellow", "Red"
+
+  createdAt   DateTime @default(now())
+
+  @@index([matchId])
+  @@index([teamId])
+}
+
+// Logs de API para monitoreo
+model ApiLog {
+  id            Int      @id @default(autoincrement())
+  endpoint      String
+  method        String
+  statusCode    Int
+  responseTime  Int      // Milisegundos
+  cached        Boolean  @default(false)
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+
+  @@index([endpoint])
+  @@index([createdAt])
+}
