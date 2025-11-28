@@ -32,11 +32,11 @@ export type ApiFootballResponse<T> = {
  */
 class ApiFootballClient {
   private baseUrl: string
-  private apiKey: string
+  // private apiKey: string // Removed to use lazy loading
 
   constructor() {
     this.baseUrl = API_BASE_URL
-    this.apiKey = API_KEY
+    // this.apiKey = API_KEY // Removed
   }
 
   /**
@@ -55,8 +55,7 @@ class ApiFootballClient {
       const response = await fetch(url.toString(), {
         method: 'GET',
         headers: {
-          'x-rapidapi-key': this.apiKey,
-          'x-rapidapi-host': 'v3.football.api-sports.io',
+          'x-apisports-key': process.env.API_FOOTBALL_KEY || API_KEY,
         },
       })
 
@@ -115,8 +114,9 @@ export const apiFootballClient = new ApiFootballClient()
 
 /**
  * Obtiene fixtures (partidos) de una liga
+ * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
  */
-export async function getFixtures(leagueId: number, season: number = 2024) {
+export async function getFixtures(leagueId: number, season: number = 2022) {
   return apiFootballClient.get<ApiFootballResponse<unknown[]>>('/fixtures', {
     league: leagueId,
     season,
@@ -125,8 +125,9 @@ export async function getFixtures(leagueId: number, season: number = 2024) {
 
 /**
  * Obtiene la tabla de posiciones de una liga
+ * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
  */
-export async function getStandings(leagueId: number, season: number = 2024) {
+export async function getStandings(leagueId: number, season: number = 2023) {
   return apiFootballClient.get<ApiFootballResponse<unknown[]>>('/standings', {
     league: leagueId,
     season,
@@ -162,10 +163,11 @@ export async function getMatchStatistics(fixtureId: number) {
 
 /**
  * Obtiene información de una liga
+ * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
  */
-export async function getLeague(leagueId: number, season: number = 2024) {
-  return apiFootballClient.get<ApiFootballResponse<unknown[]>>('/leagues', {
-    id: leagueId,
+export async function getLeague(leagueId: number, season: number = 2023) {
+  return apiFootballClient.get<ApiFootballResponse<unknown[]>>('/standings', {
+    league: leagueId,
     season,
   })
 }
