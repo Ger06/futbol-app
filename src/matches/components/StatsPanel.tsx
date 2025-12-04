@@ -25,7 +25,7 @@ interface StatsPanelProps {
 
 export function StatsPanel({ matchId, matchStatus, className = '' }: StatsPanelProps) {
   const { data, isLoading, error } = useMatchStatistics(matchId, matchStatus)
-  const hasStats = useHasStatistics(data)
+  const hasStats = useHasStatistics(data ?? null)
 
   // Estado de carga
   if (isLoading) {
@@ -105,7 +105,7 @@ export function StatsPanel({ matchId, matchStatus, className = '' }: StatsPanelP
  */
 export function StatsPanelCompact({ matchId, matchStatus, className = '' }: StatsPanelProps) {
   const { data, isLoading, error } = useMatchStatistics(matchId, matchStatus)
-  const hasStats = useHasStatistics(data)
+  const hasStats = useHasStatistics(data ?? null)
 
   if (isLoading) {
     return (
