@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:connections": "dotenv -e .env.local -- tsx scripts/test-connections.ts"
+    "test:connections": "dotenv -e .env.local -- tsx scripts/test-connections.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
