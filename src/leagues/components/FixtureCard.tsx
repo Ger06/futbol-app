@@ -26,8 +26,8 @@ interface FixtureCardProps {
  */
 export function FixtureCard({ match, onClick }: FixtureCardProps) {
   const isFinished = match.status === 'FT'
-  const isLive = match.status === 'LIVE' || match.status === '1H' || match.status === '2H'
-  const isNotStarted = match.status === 'NS' || match.status === 'TBD'
+  const isLive = match.status === 'LIVE'
+  const isNotStarted = match.status === 'NS'
 
   // Formatear fecha y hora
   const matchDate = new Date(match.matchDate)
