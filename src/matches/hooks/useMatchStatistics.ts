@@ -32,7 +32,7 @@ export function useMatchStatistics(matchId: number, matchStatus?: MatchStatus) {
   const isFinished = matchStatus === 'FT' || matchStatus === 'AET' || matchStatus === 'PEN'
 
   // Determinar si el partido está en vivo
-  const isLive = matchStatus === 'LIVE' || matchStatus === 'HT' || matchStatus === '1H' || matchStatus === '2H'
+  const isLive = matchStatus === 'LIVE' || matchStatus === 'HT'
 
   return useQuery({
     queryKey: queryKeys.matches.statistics(matchId),
