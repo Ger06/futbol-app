@@ -10,7 +10,7 @@ import { useMatchStatistics, useHasStatistics } from '@/matches/hooks'
  */
 export function MatchStatisticsTest({ matchId }: { matchId: number }) {
   const { data, isLoading, error } = useMatchStatistics(matchId, 'FT')
-  const hasStats = useHasStatistics(data)
+  const hasStats = useHasStatistics(data ?? null)
 
   if (isLoading) {
     return (
