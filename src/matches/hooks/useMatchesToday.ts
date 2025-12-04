@@ -6,6 +6,7 @@ interface MatchesResponse {
   success: boolean
   data: MatchWithTeams[]
   count: number
+  error?: string
 }
 
 /**
