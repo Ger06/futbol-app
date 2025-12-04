@@ -64,6 +64,7 @@ export const queryKeys = {
     byTeam: (teamId: number) => [...queryKeys.matches.all, 'team', teamId] as const,
     live: () => [...queryKeys.matches.all, 'live'] as const,
     detail: (matchId: number) => [...queryKeys.matches.all, matchId] as const,
+    statistics: (matchId: number) => [...queryKeys.matches.all, matchId, 'statistics'] as const,
   },
 
   // Standings

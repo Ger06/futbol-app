@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { Card } from '@/shared/components/ui/Card'
 import { StatusBadge } from '@/shared/components/ui/Badge'
 import { GoalsList } from './GoalsList'
@@ -9,6 +10,8 @@ import type { MatchWithTeams, MatchWithDetails } from '@/matches/types'
 interface MatchCardProps {
   match: MatchWithTeams | MatchWithDetails
   onClick?: () => void
+  /** Si es false, el card no será clickeable (default: true) */
+  clickable?: boolean
 }
 
 /**
@@ -21,18 +24,18 @@ interface MatchCardProps {
  * - Liga
  * - Hora del partido
  *
+ * Por defecto, el card es clickeable y navega a /match/[id]
+ *
  * @param match - Datos del partido con equipos y liga
- * @param onClick - Función opcional al hacer click
+ * @param onClick - Función opcional al hacer click (sobrescribe navegación por defecto)
+ * @param clickable - Si es false, el card no será clickeable (default: true)
  *
  * @example
  * ```tsx
- * <MatchCard
- *   match={match}
- *   onClick={() => router.push(`/match/${match.id}`)}
- * />
+ * <MatchCard match={match} />
  * ```
  */
-export function MatchCard({ match, onClick }: MatchCardProps) {
+export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) {
   const formatTime = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date
     return d.toLocaleTimeString('es-AR', {
@@ -46,11 +49,16 @@ export function MatchCard({ match, onClick }: MatchCardProps) {
   const hasStarted = match.status !== 'NS'
   const hasGoals = 'goals' in match && match.goals && match.goals.length > 0
 
-  return (
+  // Si es clickeable y no hay onClick custom, usar Link de Next.js
+  const isClickable = clickable && !onClick
+
+  const cardContent = (
     <Card
-      hoverable={!!onClick}
+      hoverable={clickable}
       onClick={onClick}
-      className={isLive ? 'border-red-300 bg-red-50/30' : ''}
+      className={`${isLive ? 'border-red-300 bg-red-50/30' : ''} ${
+        isClickable ? 'cursor-pointer transition-transform hover:scale-[1.02]' : ''
+      }`}
     >
       {/* Header con Liga y Status */}
       <div className="mb-3 flex items-center justify-between">
@@ -137,4 +145,15 @@ export function MatchCard({ match, onClick }: MatchCardProps) {
       )}
     </Card>
   )
+
+  // Si es clickeable sin onClick custom, envolver en Link
+  if (isClickable) {
+    return (
+      <Link href={`/match/${match.id}`} className="block">
+        {cardContent}
+      </Link>
+    )
+  }
+
+  return cardContent
 }

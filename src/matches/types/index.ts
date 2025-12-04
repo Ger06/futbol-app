@@ -195,6 +195,33 @@ export type MatchStatistics = {
     type: string
     value: number | string | null
   }[]
-}[]
+}
+
+// Respuesta del endpoint de estadísticas
+export type MatchStatisticsResponse = {
+  success: boolean
+  data: MatchStatistics[] | null
+  cached?: boolean
+  message?: string
+}
+
+// Tipos de estadísticas disponibles en API-Football
+export type StatisticType =
+  | 'Shots on Goal'
+  | 'Shots off Goal'
+  | 'Total Shots'
+  | 'Blocked Shots'
+  | 'Shots insidebox'
+  | 'Shots outsidebox'
+  | 'Fouls'
+  | 'Corner Kicks'
+  | 'Offsides'
+  | 'Ball Possession'
+  | 'Yellow Cards'
+  | 'Red Cards'
+  | 'Goalkeeper Saves'
+  | 'Total passes'
+  | 'Passes accurate'
+  | 'Passes %'
 
 export default Match

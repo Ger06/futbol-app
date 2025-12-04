@@ -100,4 +100,29 @@ export const CACHE_TTL = {
   FINISHED_MATCHES: parseInt(process.env.CACHE_FINISHED_MATCHES || '2592000'),
 } as const
 
+/**
+ * TTL específicos para estadísticas de partidos según su status
+ */
+export const STATS_CACHE_TTL = {
+  'FT': 30 * 24 * 60 * 60,   // 30 días - Partidos finalizados
+  'AET': 30 * 24 * 60 * 60,  // 30 días - Después de tiempo extra
+  'PEN': 30 * 24 * 60 * 60,  // 30 días - Después de penales
+  'LIVE': 30,                 // 30 segundos - Partidos en vivo
+  'HT': 30,                   // 30 segundos - Medio tiempo
+  '1H': 30,                   // 30 segundos - Primer tiempo
+  '2H': 30,                   // 30 segundos - Segundo tiempo
+  'NS': 60 * 60,              // 1 hora - No iniciado
+  'TBD': 60 * 60,             // 1 hora - Por definir
+  'PST': 24 * 60 * 60,        // 24 horas - Pospuesto
+  'CANC': 24 * 60 * 60,       // 24 horas - Cancelado
+  'ABD': 24 * 60 * 60,        // 24 horas - Abandonado
+} as const
+
+/**
+ * Helper: Obtiene el TTL apropiado para estadísticas según status del partido
+ */
+export function getStatsCacheTTL(status: string): number {
+  return STATS_CACHE_TTL[status as keyof typeof STATS_CACHE_TTL] || 60 * 60 // Default: 1 hora
+}
+
 export default redis
