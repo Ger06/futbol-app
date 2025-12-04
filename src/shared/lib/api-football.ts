@@ -183,6 +183,63 @@ export interface Fixture {
   events?: any[]
 }
 
+// Tipos para Standings/Leagues
+export interface LeagueResponse {
+  league: {
+    id: number
+    name: string
+    country: string
+    logo: string
+    flag: string | null
+    season: number
+    standings: Array<Array<{
+      rank: number
+      team: {
+        id: number
+        name: string
+        logo: string
+      }
+      points: number
+      goalsDiff: number
+      group: string
+      form: string
+      status: string
+      description: string | null
+      all: {
+        played: number
+        win: number
+        draw: number
+        lose: number
+        goals: {
+          for: number
+          against: number
+        }
+      }
+      home: {
+        played: number
+        win: number
+        draw: number
+        lose: number
+        goals: {
+          for: number
+          against: number
+        }
+      }
+      away: {
+        played: number
+        win: number
+        draw: number
+        lose: number
+        goals: {
+          for: number
+          against: number
+        }
+      }
+      update: string
+    }>>
+  }
+}
+
 /**
  * Obtiene fixtures (partidos) de una liga
  * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
@@ -199,7 +256,7 @@ export async function getFixtures(leagueId: number, season: number = 2022) {
  * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
  */
 export async function getStandings(leagueId: number, season: number = 2023) {
-  return apiFootballClient.get<ApiFootballResponse<unknown[]>>('/standings', {
+  return apiFootballClient.get<ApiFootballResponse<LeagueResponse[]>>('/standings', {
     league: leagueId,
     season,
   })
@@ -209,7 +266,7 @@ export async function getStandings(leagueId: number, season: number = 2023) {
  * Obtiene fixtures por fecha
  */
 export async function getFixturesByDate(date: string) {
-  return apiFootballClient.get<ApiFootballResponse<unknown[]>>('/fixtures', {
+  return apiFootballClient.get<ApiFootballResponse<Fixture[]>>('/fixtures', {
     date, // Formato: YYYY-MM-DD
   })
 }
@@ -218,7 +275,7 @@ export async function getFixturesByDate(date: string) {
  * Obtiene fixtures en vivo
  */
 export async function getLiveFixtures() {
-  return apiFootballClient.get<ApiFootballResponse<unknown[]>>('/fixtures', {
+  return apiFootballClient.get<ApiFootballResponse<Fixture[]>>('/fixtures', {
     live: 'all',
   })
 }
@@ -237,7 +294,7 @@ export async function getMatchStatistics(fixtureId: number) {
  * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
  */
 export async function getLeague(leagueId: number, season: number = 2023) {
-  return apiFootballClient.get<ApiFootballResponse<unknown[]>>('/standings', {
+  return apiFootballClient.get<ApiFootballResponse<LeagueResponse[]>>('/standings', {
     league: leagueId,
     season,
   })
