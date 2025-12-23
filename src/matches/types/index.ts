@@ -54,6 +54,19 @@ export type MatchWithTeams = Match & {
 export type MatchWithDetails = MatchWithTeams & {
   goals: Goal[]
   cards: Card[]
+  elapsed?: number
+  stats?: {
+    home: TeamStatsDetails
+    away: TeamStatsDetails
+  }
+}
+
+export type TeamStatsDetails = {
+  possession: number
+  shotsOnTarget: number
+  totalShots: number
+  corners: number
+  fouls: number
 }
 
 export type Goal = {
