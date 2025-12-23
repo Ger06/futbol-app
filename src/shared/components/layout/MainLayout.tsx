@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Sidebar } from './Sidebar'
+import { BackgroundController } from './BackgroundController'
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -17,14 +18,16 @@ interface MainLayoutProps {
  */
 export function MainLayout({ children }: MainLayoutProps) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen max-w-1440 justify-center">
+      <BackgroundController />
+      
       {/* Sidebar */}
       <Sidebar />
 
       {/* Contenido Principal */}
-      <main className="flex-1 lg:ml-64">
+      <main className="flex w-full flex-1 flex-col">
         {/* Padding superior en mobile para evitar overlap con botón hamburguesa */}
-        <div className="container mx-auto min-h-screen px-4 pb-8 pt-16 lg:px-8 lg:pt-8">
+        <div className="container mx-auto px-4 pt-4 lg:px-8">
           {children}
         </div>
       </main>

@@ -60,9 +60,9 @@ export function FixtureSlider({
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border-2 border-[#8a6d3b] bg-[#1a120b] p-6 shadow-lg">
         <div className="mb-6 text-center">
-          <h2 className="text-lg font-bold text-gray-900">Fixture</h2>
+          <h2 className="text-xl font-bold font-marker text-[#c5a059] uppercase">Fixture</h2>
         </div>
         <LoadingSection />
       </div>
@@ -71,12 +71,12 @@ export function FixtureSlider({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border-2 border-[#8a6d3b] bg-[#1a120b] p-6 shadow-lg">
         <div className="mb-6 text-center">
-          <h2 className="text-lg font-bold text-gray-900">Fixture</h2>
+          <h2 className="text-xl font-bold font-marker text-[#c5a059] uppercase">Fixture</h2>
         </div>
-        <div className="rounded-lg border-2 border-dashed border-red-200 bg-red-50 p-6 text-center">
-          <p className="text-sm font-semibold text-red-800">
+        <div className="rounded-lg border-2 border-dashed border-red-900/50 bg-red-900/20 p-6 text-center">
+          <p className="text-sm font-semibold text-red-400">
             Error al cargar fixture
           </p>
         </div>
@@ -86,12 +86,12 @@ export function FixtureSlider({
 
   if (!allFixtures || allFixtures.length === 0 || !availableRounds) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border-2 border-[#8a6d3b] bg-[#1a120b] p-6 shadow-lg">
         <div className="mb-6 text-center">
-          <h2 className="text-lg font-bold text-gray-900">Fixture</h2>
+          <h2 className="text-xl font-bold font-marker text-[#c5a059] uppercase">Fixture</h2>
         </div>
-        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center">
-          <p className="text-sm text-gray-600">No hay fixtures disponibles</p>
+        <div className="rounded-lg border-2 border-dashed border-[#8a6d3b]/50 bg-[#2c241b] p-6 text-center">
+          <p className="text-sm text-[#e6c885]">No hay fixtures disponibles</p>
         </div>
       </div>
     )
@@ -102,15 +102,18 @@ export function FixtureSlider({
   const matches = currentFixture?.matches || []
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="rounded-lg border-2 border-[#8a6d3b] bg-[#1a120b] shadow-lg relative overflow-hidden">
+       {/* Texture Overlay */}
+       <div className="absolute inset-0 bg-[url('/textures/grunge.png')] opacity-10 pointer-events-none mix-blend-overlay"></div>
+
       {/* Header */}
-      <div className="border-b border-gray-200 px-6 py-4">
+      <div className="border-b border-[#8a6d3b] px-6 py-4 relative z-10 bg-[#2c241b]">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Fixture</h2>
+          <h2 className="text-xl font-bold font-marker text-[#c5a059] uppercase tracking-wide">Fixture</h2>
           {showAllLink && (
             <Link
               href={`/${leagueSlug}/fixture`}
-              className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
+              className="text-sm font-bold font-oswald text-[#e6c885] transition-colors hover:text-[#c5a059] uppercase tracking-wider"
             >
               Ver fixture completo →
             </Link>
@@ -119,7 +122,7 @@ export function FixtureSlider({
       </div>
 
       {/* Selector de jornada */}
-      <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
+      <div className="border-b border-[#8a6d3b] bg-[#1a120b] px-6 py-4 relative z-10">
         <RoundSelector
           rounds={availableRounds}
           currentRound={selectedRound}
@@ -128,10 +131,10 @@ export function FixtureSlider({
       </div>
 
       {/* Lista de partidos */}
-      <div className="p-6">
+      <div className="p-6 relative z-10">
         {matches.length === 0 ? (
-          <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="rounded-lg border-2 border-dashed border-[#8a6d3b]/50 p-6 text-center">
+            <p className="text-sm text-[#e6c885]">
               No hay partidos en esta jornada
             </p>
           </div>
@@ -149,15 +152,15 @@ export function FixtureSlider({
       </div>
 
       {/* Footer con estadísticas */}
-      <div className="border-t border-gray-200 bg-gray-50 px-6 py-3">
-        <div className="flex items-center justify-between text-xs text-gray-600">
+      <div className="border-t border-[#8a6d3b] bg-[#2c241b] px-6 py-3 relative z-10">
+        <div className="flex items-center justify-between text-xs font-oswald text-[#e6c885]/80">
           <span>
             {matches.length} {matches.length === 1 ? 'partido' : 'partidos'}
           </span>
           {showAllLink && (
             <Link
               href={`/${leagueSlug}/fixture`}
-              className="font-medium text-blue-600 transition-colors hover:text-blue-700"
+              className="font-bold text-[#e6c885] transition-colors hover:text-[#c5a059] uppercase"
             >
               Ver todas las jornadas
             </Link>

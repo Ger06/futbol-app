@@ -26,17 +26,27 @@ interface CardProps {
 export function Card({
   children,
   className = '',
-  onClick,
   hoverable = false,
+  onClick,
 }: CardProps) {
-  const hoverClass = hoverable
-    ? 'hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer'
-    : ''
-
   return (
     <div
-      className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm ${hoverClass} ${className}`}
       onClick={onClick}
+      className={`
+        relative overflow-hidden bg-[#2c241b] /* Fondo oscuro grunge */
+        border-l-4 border-[#c5a059] /* Borde dorado a la izquierda */
+        p-5 shadow-lg
+        transition-all duration-200
+        ${
+          hoverable
+            ? 'cursor-pointer hover:-translate-y-1 hover:bg-[#3d3226] hover:shadow-[4px_4px_0px_#8a6d3b] hover:border-[#e6c885]'
+            : ''
+        }
+        ${className}
+      `}
+      style={{
+        clipPath: 'polygon(0 0, 100% 0, 100% 90%, 95% 100%, 0 100%)'
+      }}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={
@@ -50,6 +60,9 @@ export function Card({
           : undefined
       }
     >
+      {/* Decorative corner accent */}
+      <div className="absolute top-0 right-0 h-4 w-4 border-t-2 border-r-2 border-[#8a6d3b] opacity-50" />
+      
       {children}
     </div>
   )

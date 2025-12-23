@@ -36,10 +36,10 @@ export function PageLayout({
         {(title || description) && (
           <div className="mb-8">
             {title && (
-              <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+              <h1 className="text-3xl font-bold font-marker text-[#c5a059] uppercase tracking-wide drop-shadow-md">{title}</h1>
             )}
             {description && (
-              <p className="mt-2 text-gray-600">{description}</p>
+              <p className="mt-2 text-[#e6c885]/80 font-oswald uppercase tracking-wider text-sm">{description}</p>
             )}
           </div>
         )}

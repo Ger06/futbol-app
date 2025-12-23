@@ -60,6 +60,7 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
         isClickable ? 'cursor-pointer transition-transform hover:scale-[1.02]' : ''
       }`}
     >
+      <div className="px-2">
       {/* Header con Liga y Status */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -70,11 +71,11 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
               className="h-4 w-4 object-contain"
             />
           )}
-          <span className="text-xs font-medium text-gray-600">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#c5a059]">
             {match.league.name}
           </span>
         </div>
-        <StatusBadge status={match.status} />
+        <StatusBadge status={match.status} theme="retro" />
       </div>
 
       {/* Equipos y Resultado */}
@@ -89,14 +90,12 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
                 className="h-8 w-8 object-contain"
               />
             )}
-            <span className="font-medium text-gray-900">
+            <span className="font-bold text-gray-100">
               {match.homeTeam.name}
             </span>
           </div>
           {hasStarted && (
-            <span
-              className={`text-2xl font-bold ${isLive ? 'text-red-600' : 'text-gray-900'}`}
-            >
+            <span className={`text-2xl font-bold ${isLive ? 'text-red-500' : 'text-gray-100'}`}>
               {match.homeScore ?? 0}
             </span>
           )}
@@ -112,14 +111,12 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
                 className="h-8 w-8 object-contain"
               />
             )}
-            <span className="font-medium text-gray-900">
+            <span className="font-bold text-gray-100">
               {match.awayTeam.name}
             </span>
           </div>
           {hasStarted && (
-            <span
-              className={`text-2xl font-bold ${isLive ? 'text-red-600' : 'text-gray-900'}`}
-            >
+            <span className={`text-2xl font-bold ${isLive ? 'text-red-500' : 'text-gray-100'}`}>
               {match.awayScore ?? 0}
             </span>
           )}
@@ -138,11 +135,12 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
       {/* Footer con Hora */}
       {!hasStarted && (
         <div className="mt-3 border-t border-gray-100 pt-2 text-center">
-          <span className="text-sm text-gray-600">
+          <span className="text-sm font-medium text-[#8a6d3b]">
             {formatTime(match.matchDate)}
           </span>
         </div>
       )}
+      </div>
     </Card>
   )
 

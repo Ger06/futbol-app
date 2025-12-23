@@ -1,17 +1,41 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
-  --primary: #2563eb;
-  --primary-dark: #1e40af;
+  /* FIFA 98 "Road to Cup" Palette */
+  --color-gold-primary: #c5a059;
+  --color-gold-dark: #8a6d3b;
+  --color-gold-light: #e6c885;
+  --color-grunge-black: #1a120b;
+  --color-grunge-dark: #2c241b;
+  --color-energy-red: #e63946;
+  --color-paper-white: #f4f1ea;
+
+  /* Mappings */
+  --background: var(--color-grunge-black);
+  --foreground: var(--color-paper-white);
+  --primary: var(--color-gold-primary);
+  --primary-dark: var(--color-gold-dark);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
-  --font-sans: var(--font-geist-sans);
+
+  --color-gold: var(--color-gold-primary);
+  --color-gold-dark: var(--color-gold-dark);
+  --color-gold-light: var(--color-gold-light);
+  --color-grunge: var(--color-grunge-black);
+  --color-energy: var(--color-energy-red);
+  --color-paper: var(--color-paper-white);
+
+  --font-marker: "Permanent Marker", cursive;
+  --font-oswald: "Oswald", sans-serif;
+
+  --font-sans: var(--font-oswald);
+  /* Default to Oswald for that condensed sport look */
   --font-mono: var(--font-geist-mono);
 }
 
@@ -26,10 +50,17 @@ html {
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image:
+    linear-gradient(rgba(26, 18, 11, 0.85), rgba(26, 18, 11, 0.95)),
+    url("/textures/grunge.png"),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  background-blend-mode: overlay, multiply, normal;
+  background-size: cover, 500px, auto;
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  line-height: 1.6;
+  font-family: var(--font-oswald), sans-serif;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -39,7 +70,7 @@ body {
   width: 100%;
   max-width: 1230px;
   margin-left: auto;
-  /*margin-right: auto;*/
+  margin-right: auto;
   padding-left: 1rem;
   padding-right: 1rem;
 }
@@ -102,4 +133,20 @@ a {
 img {
   max-width: 100%;
   height: auto;
+}
+
+/* Background Contexts */
+.bg-stadium {
+  background-image: linear-gradient(to bottom, #1a120b, #3d3226);
+  /* Placeholder for bg-stadium.jpg */
+}
+
+.bg-pitch {
+  background-image: linear-gradient(to bottom, #1a2c1a, #2c4a2c);
+  /* Placeholder for bg-pitch.jpg */
+}
+
+.bg-locker {
+  background-image: linear-gradient(to bottom, #2c241b, #4a3e32);
+  /* Placeholder for bg-locker.jpg */
 }

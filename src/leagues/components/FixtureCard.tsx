@@ -49,7 +49,7 @@ export function FixtureCard({ match, onClick }: FixtureCardProps) {
   return (
     <div
       onClick={handleClick}
-      className={`rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all ${
+      className={`rounded-lg border border-[#8a6d3b] bg-[#2c241b] p-4 shadow-sm transition-all ${
         onClick ? 'cursor-pointer hover:border-blue-300 hover:shadow-md' : ''
       }`}
     >
@@ -87,12 +87,12 @@ export function FixtureCard({ match, onClick }: FixtureCardProps) {
                 />
               </div>
             )}
-            <span className="font-medium text-gray-900">
+            <span className="font-medium text-[#e6c885]">
               {match.homeTeam.name}
             </span>
           </div>
           {(isFinished || isLive) && match.homeScore !== null && (
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold text-[#e6c885]">
               {match.homeScore}
             </span>
           )}
@@ -112,12 +112,12 @@ export function FixtureCard({ match, onClick }: FixtureCardProps) {
                 />
               </div>
             )}
-            <span className="font-medium text-gray-900">
+            <span className="font-medium text-[#e6c885]">
               {match.awayTeam.name}
             </span>
           </div>
           {(isFinished || isLive) && match.awayScore !== null && (
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold text-[#e6c885]">
               {match.awayScore}
             </span>
           )}

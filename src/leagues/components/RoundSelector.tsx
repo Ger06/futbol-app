@@ -76,8 +76,8 @@ export function RoundSelector({
 
       {/* Jornada actual */}
       <div className="min-w-[200px] text-center">
-        <div className="text-lg font-bold text-gray-900">{currentRound}</div>
-        <div className="text-xs text-gray-500">
+        <div className="text-lg font-bold text-[#c5a059]">{currentRound}</div>
+        <div className="text-xs text-[#e6c885]">
           {currentIndex + 1} de {rounds.length}
         </div>
       </div>

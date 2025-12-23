@@ -8,28 +8,18 @@ interface BadgeProps {
   variant?: BadgeVariant
   size?: BadgeSize
   className?: string
+  style?: React.CSSProperties
 }
 
 /**
  * Badge - Componente de etiqueta/insignia
- *
- * @param children - Contenido del badge
- * @param variant - Variante de color: default, success, warning, danger, info
- * @param size - Tamaño: sm, md, lg
- * @param className - Clases CSS adicionales
- *
- * @example
- * ```tsx
- * <Badge variant="success">En Vivo</Badge>
- * <Badge variant="warning">Entretiempo</Badge>
- * <Badge variant="danger">Cancelado</Badge>
- * ```
  */
 export function Badge({
   children,
   variant = 'default',
   size = 'md',
   className = '',
+  style,
 }: BadgeProps) {
   const variantClasses: Record<BadgeVariant, string> = {
     default: 'bg-gray-100 text-gray-800 border-gray-200',
@@ -48,6 +38,7 @@ export function Badge({
   return (
     <span
       className={`inline-flex items-center justify-center rounded-full border font-medium ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      style={style}
     >
       {children}
     </span>
@@ -83,10 +74,37 @@ export function LiveBadge() {
  * <StatusBadge status={match.status} />
  * ```
  */
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status, theme = 'default' }: { status: string; theme?: 'default' | 'retro' }) {
   const getVariantAndText = (
     status: string
-  ): { variant: BadgeVariant; text: string } => {
+  ): { variant: BadgeVariant; text: string; className?: string; style?: React.CSSProperties } => {
+    if (theme === 'retro') {
+      const retroPadding = { padding: '4px 12px' }
+      switch (status) {
+        case 'NS':
+          return { variant: 'default', text: 'Por Jugar', className: 'bg-[#1a120b] text-[#c5a059] border-[#8a6d3b]', style: retroPadding }
+        case 'LIVE':
+          return { variant: 'danger', text: '● EN VIVO', className: 'bg-[#ef4444] text-white border-[#991b1b] animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.6)]', style: retroPadding }
+        case 'HT':
+          return { variant: 'warning', text: 'Entretiempo', className: 'bg-[#8a6d3b] text-[#f4f1ea] border-[#c5a059]', style: retroPadding }
+        case 'FT':
+          return { variant: 'success', text: 'Finalizado', className: 'bg-[#c5a059] text-[#1a120b] border-[#8a6d3b] font-bold shadow-md', style: retroPadding }
+        case 'AET':
+          return { variant: 'success', text: 'Final (Prórroga)', className: 'bg-[#c5a059] text-[#1a120b] border-[#8a6d3b] font-bold', style: retroPadding }
+        case 'PEN':
+          return { variant: 'success', text: 'Final (Penales)', className: 'bg-[#c5a059] text-[#1a120b] border-[#8a6d3b] font-bold', style: retroPadding }
+        case 'PST':
+          return { variant: 'warning', text: 'Pospuesto', className: 'bg-[#1a120b] text-[#c5a059] border-[#8a6d3b] opacity-80', style: retroPadding }
+        case 'CANC':
+          return { variant: 'danger', text: 'Cancelado', className: 'bg-[#1a120b] text-red-500 border-red-900 opacity-80', style: retroPadding }
+        case 'ABD':
+          return { variant: 'danger', text: 'Abandonado', className: 'bg-[#1a120b] text-red-500 border-red-900 opacity-80', style: retroPadding }
+        default:
+          return { variant: 'default', text: status, className: 'bg-[#1a120b] text-[#c5a059] border-[#8a6d3b]', style: retroPadding }
+      }
+    }
+
+    // Default theme logic
     switch (status) {
       case 'NS':
         return { variant: 'default', text: 'Por Jugar' }
@@ -111,13 +129,14 @@ export function StatusBadge({ status }: { status: string }) {
     }
   }
 
-  const { variant, text } = getVariantAndText(status)
+  const { variant, text, className, style } = getVariantAndText(status)
 
   return (
     <Badge
       variant={variant}
       size="sm"
-      className={status === 'LIVE' ? 'animate-pulse' : ''}
+      className={`${status === 'LIVE' ? 'animate-pulse' : ''} ${className || ''}`}
+      style={style}
     >
       {text}
     </Badge>

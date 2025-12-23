@@ -38,8 +38,10 @@ export function MatchList({
 }: MatchListProps) {
   if (matches.length === 0) {
     return (
-      <div className="flex min-h-[300px] items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-        <p className="text-gray-500">{emptyMessage}</p>
+      <div className="flex min-h-[300px] flex-col items-center justify-center rounded-lg border-4 border-dashed border-[#8a6d3b]/50 bg-[#1a120b]/50 p-8 text-center">
+        <span className="mb-4 text-4xl opacity-50">⚽</span>
+        <p className="text-xl font-marker text-[#8a6d3b]">{emptyMessage}</p>
+        <p className="mt-2 font-oswald text-sm text-[#e6c885]/60 uppercase tracking-widest">Available Next Update</p>
       </div>
     )
   }
@@ -47,7 +49,7 @@ export function MatchList({
   // Si no se agrupa, renderizar lista simple
   if (!groupByLeague) {
     return (
-      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {matches.map((match) => (
           <MatchCard
             key={match.id}
@@ -73,27 +75,33 @@ export function MatchList({
   )
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {Object.entries(groupedMatches).map(([leagueName, leagueMatches]) => (
-        <div key={leagueName}>
+        <div key={leagueName} className="relative">
           {/* Header de Liga */}
-          <div className="mb-4 flex items-center gap-3 border-b border-gray-200 pb-2">
+          <div className="mb-6 flex items-end gap-3 border-b-4 border-[#8a6d3b] pb-2 pl-2">
             {leagueMatches[0].league.logo && (
-              <img
-                src={leagueMatches[0].league.logo}
-                alt={leagueName}
-                className="h-6 w-6 object-contain"
-              />
+              <div className="relative -mb-4 mr-2 rounded-full border-2 border-[#c5a059] bg-[#f4f1ea] p-1 shadow-lg">
+                <img
+                  src={leagueMatches[0].league.logo}
+                  alt={leagueName}
+                  className="h-10 w-10 object-contain"
+                />
+              </div>
             )}
-            <h2 className="text-xl font-bold text-gray-900">{leagueName}</h2>
-            <span className="text-sm text-gray-500">
-              ({leagueMatches.length}{' '}
-              {leagueMatches.length === 1 ? 'partido' : 'partidos'})
-            </span>
+            <div>
+              <h2 className="text-3xl font-bold font-marker text-[#c5a059] uppercase tracking-wide drop-shadow-md skew-x-[-10deg]">
+                {leagueName}
+              </h2>
+              <span className="text-xs font-oswald font-bold text-[#e6c885] uppercase tracking-widest bg-[#8a6d3b]/20 px-2 py-0.5 rounded-sm">
+                {leagueMatches.length}{' '}
+                {leagueMatches.length === 1 ? 'MATCH' : 'MATCHES'}
+              </span>
+            </div>
           </div>
 
           {/* Grid de Partidos */}
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {leagueMatches.map((match) => (
               <MatchCard
                 key={match.id}

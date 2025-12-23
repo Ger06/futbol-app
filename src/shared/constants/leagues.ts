@@ -28,8 +28,8 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     shortName: 'Champions',
     country: 'Europa',
     season: 2023,
-    icon: '🏆',
-    color: '#00338D', // Azul UEFA
+    icon: '🏆', // Trophy fits the user request for "Logo de la champions" as best as possible with emoji
+    color: '#00338D',
   },
   {
     id: 39, // Premier League
@@ -38,8 +38,8 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     shortName: 'Premier',
     country: 'Inglaterra',
     season: 2023,
-    icon: '🦁',
-    color: '#38003C', // Púrpura Premier
+    icon: '🌹', // User request: Red Rose
+    color: '#38003C',
   },
   {
     id: 140, // La Liga
@@ -48,8 +48,8 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     shortName: 'La Liga',
     country: 'España',
     season: 2023,
-    icon: '⚽',
-    color: '#FF4747', // Rojo LaLiga
+    icon: '🐂', // Bull (Representative)
+    color: '#FF4747',
   },
   {
     id: 135, // Serie A
@@ -58,8 +58,8 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     shortName: 'Serie A',
     country: 'Italia',
     season: 2023,
-    icon: '🇮🇹',
-    color: '#024494', // Azul Serie A
+    icon: '🍕', // Pizza (Representative)
+    color: '#024494',
   },
   {
     id: 128, // Liga Profesional Argentina
@@ -68,8 +68,8 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     shortName: 'Argentina',
     country: 'Argentina',
     season: 2023,
-    icon: '🇦🇷',
-    color: '#75AADB', // Celeste argentino
+    icon: '🧉', // User request: Mate
+    color: '#75AADB',
   },
   {
     id: 71, // Brasileirão Serie A
@@ -78,8 +78,8 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     shortName: 'Brasileirão',
     country: 'Brasil',
     season: 2023,
-    icon: '🇧🇷',
-    color: '#009C3B', // Verde brasileño
+    icon: '🌴', // Palm Tree (Representative)
+    color: '#009C3B',
   },
   {
     id: 253, // Major League Soccer
@@ -88,8 +88,8 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     shortName: 'MLS',
     country: 'Estados Unidos',
     season: 2023,
-    icon: '🇺🇸',
-    color: '#C2C2C2', // Gris MLS
+    icon: '🦅', // Eagle (Representative)
+    color: '#C2C2C2',
   },
 ]
 
