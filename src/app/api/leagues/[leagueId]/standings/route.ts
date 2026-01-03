@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/lib/prisma'
+import { getStandings } from '@/shared/lib/api-football'
 
 interface StandingEntry {
   position: number
@@ -22,11 +23,8 @@ interface StandingEntry {
 /**
  * GET /api/leagues/[leagueId]/standings
  *
- * Calcula la tabla de posiciones de una liga basándose en los resultados
- * de los partidos finalizados
- *
- * @param leagueId - ID de la liga en nuestra base de datos (no API-Football)
- * @returns Tabla de posiciones ordenada por puntos
+ * Obtiene la tabla de posiciones directamente de API-Football
+ * para asegurar datos actualizados y oficiales.
  */
 export async function GET(
   request: NextRequest,
@@ -43,7 +41,7 @@ export async function GET(
       )
     }
 
-    // Verificar que la liga existe
+    // Verificar que la liga existe y obtener su API ID
     const league = await prisma.league.findUnique({
       where: { id: leagueIdNum },
     })
@@ -55,147 +53,54 @@ export async function GET(
       )
     }
 
-    // Obtener todos los partidos finalizados de la liga
-    const matches = await prisma.match.findMany({
-      where: {
-        leagueId: leagueIdNum,
-        status: 'FT', // Solo partidos finalizados
-        homeScore: { not: null },
-        awayScore: { not: null },
-      },
-      include: {
-        homeTeam: {
-          select: {
-            id: true,
-            name: true,
-            logo: true,
-          },
+    // Consultar API-Football (usa la temporada configurada por defecto: 2025)
+    // NOTA: Usamos league.apiId para consultar la API externa
+    const apiResponse = await getStandings(league.apiId)
+
+    // Validar respuesta de la API
+    if (
+      !apiResponse ||
+      !apiResponse.response ||
+      apiResponse.response.length === 0 ||
+      !apiResponse.response[0].league.standings
+    ) {
+      // Si falla la API, devolvemos array vacío pero éxito (para no romper la UI)
+      console.warn(`[API] No standings found for league ${league.name} (${league.apiId})`)
+      return NextResponse.json({
+        success: true,
+        data: [],
+        league: {
+          id: league.id,
+          name: league.name,
+          season: league.season,
         },
-        awayTeam: {
-          select: {
-            id: true,
-            name: true,
-            logo: true,
-          },
-        },
-      },
-      orderBy: {
-        matchDate: 'asc',
-      },
-    })
-
-    // Calcular estadísticas por equipo
-    const teamStats = new Map<number, StandingEntry>()
-
-    matches.forEach((match) => {
-      const homeScore = match.homeScore!
-      const awayScore = match.awayScore!
-
-      // Inicializar home team si no existe
-      if (!teamStats.has(match.homeTeamId)) {
-        teamStats.set(match.homeTeamId, {
-          position: 0,
-          team: {
-            id: match.homeTeam.id,
-            name: match.homeTeam.name,
-            logo: match.homeTeam.logo,
-          },
-          played: 0,
-          won: 0,
-          drawn: 0,
-          lost: 0,
-          goalsFor: 0,
-          goalsAgainst: 0,
-          goalDifference: 0,
-          points: 0,
-          form: [],
-        })
-      }
-
-      // Inicializar away team si no existe
-      if (!teamStats.has(match.awayTeamId)) {
-        teamStats.set(match.awayTeamId, {
-          position: 0,
-          team: {
-            id: match.awayTeam.id,
-            name: match.awayTeam.name,
-            logo: match.awayTeam.logo,
-          },
-          played: 0,
-          won: 0,
-          drawn: 0,
-          lost: 0,
-          goalsFor: 0,
-          goalsAgainst: 0,
-          goalDifference: 0,
-          points: 0,
-          form: [],
-        })
-      }
-
-      const homeTeamStats = teamStats.get(match.homeTeamId)!
-      const awayTeamStats = teamStats.get(match.awayTeamId)!
-
-      // Actualizar partidos jugados
-      homeTeamStats.played++
-      awayTeamStats.played++
-
-      // Actualizar goles
-      homeTeamStats.goalsFor += homeScore
-      homeTeamStats.goalsAgainst += awayScore
-      awayTeamStats.goalsFor += awayScore
-      awayTeamStats.goalsAgainst += homeScore
-
-      // Determinar resultado
-      if (homeScore > awayScore) {
-        // Victoria local
-        homeTeamStats.won++
-        homeTeamStats.points += 3
-        homeTeamStats.form.push('W')
-        awayTeamStats.lost++
-        awayTeamStats.form.push('L')
-      } else if (homeScore < awayScore) {
-        // Victoria visitante
-        awayTeamStats.won++
-        awayTeamStats.points += 3
-        awayTeamStats.form.push('W')
-        homeTeamStats.lost++
-        homeTeamStats.form.push('L')
-      } else {
-        // Empate
-        homeTeamStats.drawn++
-        homeTeamStats.points++
-        homeTeamStats.form.push('D')
-        awayTeamStats.drawn++
-        awayTeamStats.points++
-        awayTeamStats.form.push('D')
-      }
-
-      // Actualizar diferencia de goles
-      homeTeamStats.goalDifference =
-        homeTeamStats.goalsFor - homeTeamStats.goalsAgainst
-      awayTeamStats.goalDifference =
-        awayTeamStats.goalsFor - awayTeamStats.goalsAgainst
-    })
-
-    // Convertir a array y ordenar
-    const standings = Array.from(teamStats.values())
-      .sort((a, b) => {
-        // 1. Más puntos
-        if (b.points !== a.points) return b.points - a.points
-        // 2. Mejor diferencia de goles
-        if (b.goalDifference !== a.goalDifference)
-          return b.goalDifference - a.goalDifference
-        // 3. Más goles a favor
-        if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor
-        // 4. Orden alfabético
-        return a.team.name.localeCompare(b.team.name)
+        totalTeams: 0,
+        totalMatches: 0,
       })
-      .map((entry, index) => ({
-        ...entry,
-        position: index + 1,
-        form: entry.form.slice(-5), // Solo últimos 5 partidos
-      }))
+    }
+
+    // La API devuelve un array de arrays de standings (por grupos), tomamos el primero
+    // Para ligas normales es standings[0], para torneos con grupos habría que manejarlos todos
+    const apiStandings = apiResponse.response[0].league.standings[0]
+
+    // Mapear respuesta de API al formato de nuestra UI
+    const standings: StandingEntry[] = apiStandings.map((entry) => ({
+      position: entry.rank,
+      team: {
+        id: entry.team.id, // Usamos el ID de la API temporalmente en la UI
+        name: entry.team.name,
+        logo: entry.team.logo,
+      },
+      played: entry.all.played,
+      won: entry.all.win,
+      drawn: entry.all.draw,
+      lost: entry.all.lose,
+      goalsFor: entry.all.goals.for,
+      goalsAgainst: entry.all.goals.against,
+      goalDifference: entry.goalsDiff,
+      points: entry.points,
+      form: entry.form ? entry.form.split('').slice(-5) : [],
+    }))
 
     return NextResponse.json({
       success: true,
@@ -206,15 +111,16 @@ export async function GET(
         season: league.season,
       },
       totalTeams: standings.length,
-      totalMatches: matches.length,
+      totalMatches: 0, // No relevante cuando viene de API
     })
+
   } catch (error) {
     console.error('[API] Error in /api/leagues/[leagueId]/standings:', error)
 
     return NextResponse.json(
       {
         success: false,
-        error: 'Error al calcular posiciones',
+        error: 'Error al obtener posiciones de la API',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }

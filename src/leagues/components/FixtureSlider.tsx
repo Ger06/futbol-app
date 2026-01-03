@@ -48,15 +48,31 @@ export function FixtureSlider({
 
   const [selectedRound, setSelectedRound] = useState<string>('')
 
-  // Auto-seleccionar jornada inicial
+  // Auto-seleccionar jornada actual o más cercana
   useEffect(() => {
     if (initialRound) {
       setSelectedRound(initialRound)
-    } else if (availableRounds && availableRounds.length > 0 && !selectedRound) {
-      // Seleccionar la jornada más reciente (última del array)
-      setSelectedRound(availableRounds[availableRounds.length - 1])
+    } else if (allFixtures && allFixtures.length > 0 && availableRounds && availableRounds.length > 0 && !selectedRound) {
+      // Estrategia: Buscar la primera jornada que tenga partidos pendientes o de hoy
+      // Si todas acabaron, mostrar la última.
+      const now = new Date()
+      now.setHours(0, 0, 0, 0)
+
+      const activeRound = allFixtures.find(fixtureRound => {
+         return fixtureRound.matches.some(m => {
+             const mDate = new Date(m.matchDate)
+             return mDate >= now || ['LIVE', '1H', '2H', 'HT', 'ET', 'NS'].includes(m.status)
+         })
+      })
+
+      if (activeRound) {
+          setSelectedRound(activeRound.round)
+      } else {
+          // Si no hay rondas activas (todo terminó), ir a la última
+          setSelectedRound(availableRounds[availableRounds.length - 1])
+      }
     }
-  }, [initialRound, availableRounds, selectedRound])
+  }, [initialRound, availableRounds, selectedRound, allFixtures])
 
   if (isLoading) {
     return (

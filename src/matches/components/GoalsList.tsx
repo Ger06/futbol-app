@@ -51,42 +51,38 @@ export function GoalsList({ goals, homeTeamId, awayTeamId }: GoalsListProps) {
   }
 
   return (
-    <div className="mt-3 space-y-2 border-t border-gray-100 pt-3">
-      {/* Goles del equipo local */}
-      {homeGoals.length > 0 && (
-        <div className="space-y-1">
-          {homeGoals.map((goal) => (
-            <div
-              key={goal.id}
-              className="flex items-center gap-2 text-sm text-gray-700"
-            >
-              <span className="text-base">{getGoalIcon(goal.type)}</span>
-              <span className="font-medium">{goal.playerName}</span>
-              <span className="text-xs text-gray-500">
-                {formatMinute(goal.minute, goal.extraTime)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="mt-3 grid grid-cols-2 gap-8 border-t border-[#8a6d3b]/30 pt-3">
+      {/* Goles del equipo local (Izquierda) */}
+      <div className="space-y-1">
+        {homeGoals.map((goal) => (
+          <div
+            key={goal.id}
+            className="flex items-center gap-2 text-sm text-[#f4f1ea] justify-start"
+          >
+            <span className="text-base">{getGoalIcon(goal.type)}</span>
+            <span className="font-medium font-oswald tracking-wide">{goal.playerName}</span>
+            <span className="text-xs text-[#c5a059] font-mono">
+              {formatMinute(goal.minute, goal.extraTime)}
+            </span>
+          </div>
+        ))}
+      </div>
 
-      {/* Goles del equipo visitante */}
-      {awayGoals.length > 0 && (
-        <div className="space-y-1">
-          {awayGoals.map((goal) => (
-            <div
-              key={goal.id}
-              className="flex items-center gap-2 text-sm text-gray-700"
-            >
-              <span className="text-base">{getGoalIcon(goal.type)}</span>
-              <span className="font-medium">{goal.playerName}</span>
-              <span className="text-xs text-gray-500">
-                {formatMinute(goal.minute, goal.extraTime)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Goles del equipo visitante (Derecha) */}
+      <div className="space-y-1">
+        {awayGoals.map((goal) => (
+          <div
+            key={goal.id}
+            className="flex items-center gap-2 text-sm text-[#f4f1ea] justify-end"
+          >
+            <span className="text-xs text-[#c5a059] font-mono">
+              {formatMinute(goal.minute, goal.extraTime)}
+            </span>
+            <span className="font-medium font-oswald tracking-wide text-right">{goal.playerName}</span>
+            <span className="text-base">{getGoalIcon(goal.type)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

@@ -56,8 +56,8 @@ export function RoundSelector({
         disabled={!hasPrevious}
         className={`flex h-10 w-10 items-center justify-center rounded-lg border-2 transition-all ${
           hasPrevious
-            ? 'border-gray-300 bg-white text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600'
-            : 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400'
+            ? 'border-[#8a6d3b] bg-[#2c241b] text-[#c5a059] hover:bg-[#c5a059] hover:text-[#1a120b]'
+            : 'cursor-not-allowed border-[#8a6d3b]/30 bg-[#1a120b] text-[#8a6d3b]/30'
         }`}
         aria-label="Jornada anterior"
       >
@@ -76,9 +76,9 @@ export function RoundSelector({
 
       {/* Jornada actual */}
       <div className="min-w-[200px] text-center">
-        <div className="text-lg font-bold text-[#c5a059]">{currentRound}</div>
-        <div className="text-xs text-[#e6c885]">
-          {currentIndex + 1} de {rounds.length}
+        <div className="text-lg font-bold text-[#c5a059] uppercase font-oswald tracking-widest">{currentRound}</div>
+        <div className="text-xs text-[#e6c885] font-mono">
+          {currentIndex + 1} / {rounds.length}
         </div>
       </div>
 
@@ -89,8 +89,8 @@ export function RoundSelector({
         disabled={!hasNext}
         className={`flex h-10 w-10 items-center justify-center rounded-lg border-2 transition-all ${
           hasNext
-            ? 'border-gray-300 bg-white text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600'
-            : 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400'
+            ? 'border-[#8a6d3b] bg-[#2c241b] text-[#c5a059] hover:bg-[#c5a059] hover:text-[#1a120b]'
+            : 'cursor-not-allowed border-[#8a6d3b]/30 bg-[#1a120b] text-[#8a6d3b]/30'
         }`}
         aria-label="Jornada siguiente"
       >

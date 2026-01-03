@@ -27,7 +27,7 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     name: 'UEFA Champions League',
     shortName: 'Champions',
     country: 'Europa',
-    season: 2023,
+    season: 2025,
     icon: '🏆', // Trophy fits the user request for "Logo de la champions" as best as possible with emoji
     color: '#00338D',
   },
@@ -37,7 +37,7 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     name: 'Premier League',
     shortName: 'Premier',
     country: 'Inglaterra',
-    season: 2023,
+    season: 2025,
     icon: '🌹', // User request: Red Rose
     color: '#38003C',
   },
@@ -47,7 +47,7 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     name: 'LaLiga Santander',
     shortName: 'La Liga',
     country: 'España',
-    season: 2023,
+    season: 2025,
     icon: '🐂', // Bull (Representative)
     color: '#FF4747',
   },
@@ -57,8 +57,8 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     name: 'Serie A',
     shortName: 'Serie A',
     country: 'Italia',
-    season: 2023,
-    icon: '🍕', // Pizza (Representative)
+    season: 2025,
+    icon: '🍝', // Pizza (Representative)
     color: '#024494',
   },
   {
@@ -67,7 +67,7 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     name: 'Liga Profesional Argentina',
     shortName: 'Argentina',
     country: 'Argentina',
-    season: 2023,
+    season: 2025,
     icon: '🧉', // User request: Mate
     color: '#75AADB',
   },
@@ -77,7 +77,7 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     name: 'Campeonato Brasileiro Série A',
     shortName: 'Brasileirão',
     country: 'Brasil',
-    season: 2023,
+    season: 2025,
     icon: '🌴', // Palm Tree (Representative)
     color: '#009C3B',
   },
@@ -87,9 +87,19 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     name: 'Major League Soccer',
     shortName: 'MLS',
     country: 'Estados Unidos',
-    season: 2023,
-    icon: '🦅', // Eagle (Representative)
+    season: 2025,
+    icon: '🗽', // Statue of Liberty (Representative)
     color: '#C2C2C2',
+  },
+  {
+    id: 61, // Ligue 1
+    slug: 'ligue-1',
+    name: 'Ligue 1',
+    shortName: 'Ligue 1',
+    country: 'Francia',
+    season: 2025,
+    icon: '🥐', // Croissant (Representative)
+    color: '#DAE2F3',
   },
 ]
 

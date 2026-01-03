@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Card } from '@/shared/components/ui/Card'
 import { StatusBadge } from '@/shared/components/ui/Badge'
-import { GoalsList } from './GoalsList'
+import { EventsList } from './EventsList'
 import type { MatchWithTeams, MatchWithDetails } from '@/matches/types'
 
 interface MatchCardProps {
@@ -48,6 +48,11 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
   const isLive = match.status === 'LIVE'
   const hasStarted = match.status !== 'NS'
   const hasGoals = 'goals' in match && match.goals && match.goals.length > 0
+  
+  // Debug log
+  if (isLive || hasStarted) {
+      // console.log(`Match ${match.id} events:`, { goals: match.goals, cards: match.cards })
+  }
 
   // Si es clickeable y no hay onClick custom, usar Link de Next.js
   const isClickable = clickable && !onClick
@@ -56,11 +61,14 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
     <Card
       hoverable={clickable}
       onClick={onClick}
-      className={`${isLive ? 'border-red-300 bg-red-50/30' : ''} ${
+      className={`${isLive ? 'border-red-900 bg-red-950/40 relative overflow-hidden' : ''} ${
         isClickable ? 'cursor-pointer transition-transform hover:scale-[1.02]' : ''
       }`}
     >
-      <div className="px-2">
+      {isLive && (
+         <div className="absolute inset-0 bg-gradient-to-r from-red-900/10 to-transparent pointer-events-none" />
+      )}
+      <div className="px-2 relative z-10">
       {/* Header con Liga y Status */}
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -75,7 +83,7 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
             {match.league.name}
           </span>
         </div>
-        <StatusBadge status={match.status} theme="retro" />
+        <StatusBadge status={match.status} theme="retro" elapsed={(match as MatchWithDetails).elapsed} />
       </div>
 
       {/* Equipos y Resultado */}
@@ -123,12 +131,13 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
         </div>
       </div>
 
-      {/* Goles */}
-      {hasGoals && hasStarted && (
-        <GoalsList
+      {/* Eventos (Goles y Rojas) */}
+      {hasStarted && (match.goals?.length! > 0 || match.cards?.length! > 0) && (
+        <EventsList
           goals={(match as MatchWithDetails).goals}
-          homeTeamId={match.homeTeamId}
-          awayTeamId={match.awayTeamId}
+          cards={(match as MatchWithDetails).cards}
+          homeTeam={match.homeTeam}
+          awayTeam={match.awayTeam}
         />
       )}
 

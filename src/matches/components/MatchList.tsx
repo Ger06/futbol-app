@@ -80,15 +80,15 @@ export function MatchList({
         <div key={leagueName} className="relative">
           {/* Header de Liga */}
           <div className="mb-6 flex items-end gap-3 border-b-4 border-[#8a6d3b] pb-2 pl-2">
-            {leagueMatches[0].league.logo && (
+           {/*{leagueMatches[0].league.logo && (
               <div className="relative -mb-4 mr-2 rounded-full border-2 border-[#c5a059] bg-[#f4f1ea] p-1 shadow-lg">
-                <img
+                 <img
                   src={leagueMatches[0].league.logo}
                   alt={leagueName}
                   className="h-10 w-10 object-contain"
-                />
+                /> 
               </div>
-            )}
+            )}*/}
             <div>
               <h2 className="text-3xl font-bold font-marker text-[#c5a059] uppercase tracking-wide drop-shadow-md skew-x-[-10deg]">
                 {leagueName}

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useMatchDetails } from '@/matches/hooks'
-import { GoalsList } from '@/matches/components'
+import { GoalsList, Lineups } from '@/matches/components'
 import { StatusBadge } from '@/shared/components/ui/Badge'
 import Link from 'next/link'
 
@@ -177,17 +177,29 @@ export default function MatchDetailClient({ matchId }: MatchDetailClientProps) {
             </div>
         </div>
 
-        {/* Lineups Placeholder */}
-        <div className="rounded-lg bg-[#2c241b] border-2 border-[#8a6d3b] shadow-lg overflow-hidden relative flex flex-col">
-           <div className="bg-[#1a120b] border-b-2 border-[#8a6d3b] p-4 flex items-center gap-3">
-                <span className="text-2xl">📋</span>
-                <h3 className="font-marker text-[#c5a059] text-2xl uppercase tracking-wide skew-x-[-5deg]">Lineups</h3>
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-center py-12 text-[#8a6d3b] bg-[url('/textures/grunge.png')] bg-cover bg-blend-multiply opacity-80">
-                <p className="font-marker text-3xl opacity-50 skew-x-[-5deg] drop-shadow-md">Data Locked</p>
-                <p className="text-sm uppercase tracking-[0.3em] mt-3 font-oswald text-[#e6c885]">Check back before kickoff</p>
-            </div>
-        </div>
+        {/* Lineups Section */}
+        {match.lineups?.home && match.lineups?.away ? (
+            <Lineups 
+                home={match.lineups.home} 
+                away={match.lineups.away} 
+                homeTeamName={match.homeTeam.name} 
+                awayTeamName={match.awayTeam.name}
+                goals={match.goals}
+                cards={match.cards}
+                substitutions={match.substitutions}
+            />
+        ) : (
+             <div className="rounded-lg bg-[#2c241b] border-2 border-[#8a6d3b] shadow-lg overflow-hidden relative flex flex-col">
+                <div className="bg-[#1a120b] border-b-2 border-[#8a6d3b] p-4 flex items-center gap-3">
+                     <span className="text-2xl">📋</span>
+                     <h3 className="font-marker text-[#c5a059] text-2xl uppercase tracking-wide skew-x-[-5deg]">Lineups</h3>
+                 </div>
+                 <div className="flex-1 flex flex-col items-center justify-center py-12 text-[#8a6d3b] bg-[url('/textures/grunge.png')] bg-cover bg-blend-multiply opacity-80">
+                     <p className="font-marker text-3xl opacity-50 skew-x-[-5deg] drop-shadow-md">Data Locked</p>
+                     <p className="text-sm uppercase tracking-[0.3em] mt-3 font-oswald text-[#e6c885]">Check back before kickoff</p>
+                 </div>
+             </div>
+        )}
       </div>
     </div>
   )

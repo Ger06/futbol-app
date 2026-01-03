@@ -25,7 +25,7 @@ export function Badge({
     default: 'bg-gray-100 text-gray-800 border-gray-200',
     success: 'bg-green-100 text-green-800 border-green-200',
     warning: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    danger: 'bg-red-100 text-red-800 border-red-200',
+    danger: 'bg-red-400 text-red-800 border-red-200',
     info: 'bg-blue-100 text-blue-800 border-blue-200',
   }
 
@@ -74,7 +74,7 @@ export function LiveBadge() {
  * <StatusBadge status={match.status} />
  * ```
  */
-export function StatusBadge({ status, theme = 'default' }: { status: string; theme?: 'default' | 'retro' }) {
+export function StatusBadge({ status, theme = 'default', elapsed }: { status: string; theme?: 'default' | 'retro'; elapsed?: number }) {
   const getVariantAndText = (
     status: string
   ): { variant: BadgeVariant; text: string; className?: string; style?: React.CSSProperties } => {
@@ -84,7 +84,8 @@ export function StatusBadge({ status, theme = 'default' }: { status: string; the
         case 'NS':
           return { variant: 'default', text: 'Por Jugar', className: 'bg-[#1a120b] text-[#c5a059] border-[#8a6d3b]', style: retroPadding }
         case 'LIVE':
-          return { variant: 'danger', text: '● EN VIVO', className: 'bg-[#ef4444] text-white border-[#991b1b] animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.6)]', style: retroPadding }
+          const liveText = elapsed ? `● EN VIVO ${elapsed}'` : '● EN VIVO'
+          return { variant: 'danger', text: liveText, className: 'bg-[#ef4444] text-white border-[#991b1b] animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.6)]', style: retroPadding }
         case 'HT':
           return { variant: 'warning', text: 'Entretiempo', className: 'bg-[#8a6d3b] text-[#f4f1ea] border-[#c5a059]', style: retroPadding }
         case 'FT':
@@ -109,7 +110,7 @@ export function StatusBadge({ status, theme = 'default' }: { status: string; the
       case 'NS':
         return { variant: 'default', text: 'Por Jugar' }
       case 'LIVE':
-        return { variant: 'danger', text: '● EN VIVO' }
+        return { variant: 'danger', text: elapsed ? `● EN VIVO ${elapsed}'` : '● EN VIVO' }
       case 'HT':
         return { variant: 'warning', text: 'Entretiempo' }
       case 'FT':

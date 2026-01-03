@@ -8,9 +8,8 @@ import { MatchesContainer } from '@/matches/components'
  * de la temporada 2022/23 (plan FREE de API-Football solo permite temporadas 2021-2023)
  */
 export default function Home() {
-  // TEMPORAL: Usando fecha fija con datos disponibles
-  const demoDate = '2022-10-09'
-  const formattedDate = new Date(demoDate).toLocaleDateString('es-AR', {
+  const today = new Date()
+  const formattedDate = today.toLocaleDateString('es-AR', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -19,10 +18,10 @@ export default function Home() {
 
   return (
     <PageLayout
-      title="Partidos del 9 de Octubre 2022"
-      description={`Mostrando ${formattedDate} - 40 partidos de múltiples ligas (datos de demostración)`}
+      title="Partidos de Hoy"
+      description={`Mostrando partidos del ${formattedDate} - Múltiples ligas`}
     >
-      <MatchesContainer groupByLeague date={demoDate} />
+      <MatchesContainer groupByLeague />
     </PageLayout>
   )
 }

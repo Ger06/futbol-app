@@ -12,6 +12,7 @@ export const LEAGUE_IDS = {
   LIGA_PROFESIONAL: 128,    // Liga Profesional Argentina
   BRASILEIRAO: 71,          // Brasileirão Serie A
   MLS: 253,                 // MLS (Estados Unidos)
+  LIGUE_1: 61,              // Ligue 1 (Francia)
 } as const
 
 // Tipos base de API-Football
@@ -26,6 +27,8 @@ export type ApiFootballResponse<T> = {
   }
   response: T
 }
+
+const CURRENT_SEASON = 2025
 
 /**
  * Cliente HTTP para API-Football
@@ -181,6 +184,38 @@ export interface Fixture {
     }
   }
   events?: any[]
+  lineups?: {
+    team: {
+      id: number
+      name: string
+      logo: string
+      colors?: any
+    }
+    coach: {
+      id: number
+      name: string
+      photo?: string
+    }
+    formation: string
+    startXI: {
+      player: {
+        id: number
+        name: string
+        number: number
+        pos: string
+        grid: string | null
+      }
+    }[]
+    substitutes: {
+      player: {
+        id: number
+        name: string
+        number: number
+        pos: string
+        grid: string | null
+      }
+    }[]
+  }[]
 }
 
 // Tipos para Standings/Leagues
@@ -242,9 +277,8 @@ export interface LeagueResponse {
 
 /**
  * Obtiene fixtures (partidos) de una liga
- * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
  */
-export async function getFixtures(leagueId: number, season: number = 2022) {
+export async function getFixtures(leagueId: number, season: number = CURRENT_SEASON) {
   return apiFootballClient.get<ApiFootballResponse<Fixture[]>>('/fixtures', {
     league: leagueId,
     season,
@@ -252,10 +286,18 @@ export async function getFixtures(leagueId: number, season: number = 2022) {
 }
 
 /**
- * Obtiene la tabla de posiciones de una liga
- * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
+ * Obtiene un fixture por ID (incluyendo eventos, alineaciones, estadísticas si están disponibles en el endpoint standard, aunque stats suele ser aparte)
  */
-export async function getStandings(leagueId: number, season: number = 2023) {
+export async function getFixtureById(fixtureId: number) {
+  return apiFootballClient.get<ApiFootballResponse<Fixture[]>>('/fixtures', {
+    id: fixtureId,
+  })
+}
+
+/**
+ * Obtiene la tabla de posiciones de una liga
+ */
+export async function getStandings(leagueId: number, season: number = CURRENT_SEASON) {
   return apiFootballClient.get<ApiFootballResponse<LeagueResponse[]>>('/standings', {
     league: leagueId,
     season,
@@ -281,6 +323,19 @@ export async function getLiveFixtures() {
 }
 
 /**
+ * Obtiene múltiples fixtures por IDs (útil para obtener detalles como eventos de varios partidos)
+ * Nota: API-Football permite max 20 IDs por llamada.
+ */
+export async function getFixturesByIds(ids: number[]) {
+  if (ids.length === 0) return { response: [] }
+  // La API usa guiones para separar IDs: "id1-id2-id3"
+  const idsStr = ids.join('-')
+  return apiFootballClient.get<ApiFootballResponse<Fixture[]>>('/fixtures', {
+    ids: idsStr,
+  })
+}
+
+/**
  * Obtiene estadísticas de un partido
  */
 export async function getMatchStatistics(fixtureId: number) {
@@ -291,9 +346,8 @@ export async function getMatchStatistics(fixtureId: number) {
 
 /**
  * Obtiene información de una liga
- * NOTA: Plan FREE solo tiene acceso a temporadas 2021-2023
  */
-export async function getLeague(leagueId: number, season: number = 2023) {
+export async function getLeague(leagueId: number, season: number = CURRENT_SEASON) {
   return apiFootballClient.get<ApiFootballResponse<LeagueResponse[]>>('/standings', {
     league: leagueId,
     season,

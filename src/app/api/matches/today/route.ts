@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/lib/prisma'
 import { cacheOrFetch, CACHE_TTL } from '@/shared/lib/redis'
-import { getFixturesByDate, LEAGUE_IDS } from '@/shared/lib/api-football'
+import {
+  getFixturesByDate,
+  getLiveFixtures,
+  getFixturesByIds,
+  LEAGUE_IDS,
+} from '@/shared/lib/api-football'
 import type { MatchWithTeams } from '@/matches/types'
 
 /**
@@ -29,76 +34,55 @@ export async function GET(request: NextRequest) {
     const matches = await cacheOrFetch<MatchWithTeams[]>(
       cacheKey,
       async () => {
-        // Consultar base de datos
-        const dbMatches = await prisma.match.findMany({
-          where: {
-            matchDate: {
-              gte: today,
-              lt: new Date(today.getTime() + 24 * 60 * 60 * 1000), // +1 día
-            },
-          },
-          include: {
-            homeTeam: {
-              select: {
-                id: true,
-                apiId: true,
-                name: true,
-                logo: true,
-                code: true,
-              },
-            },
-            awayTeam: {
-              select: {
-                id: true,
-                apiId: true,
-                name: true,
-                logo: true,
-                code: true,
-              },
-            },
-            league: {
-              select: {
-                id: true,
-                name: true,
-                country: true,
-                logo: true,
-              },
-            },
-          },
-          orderBy: {
-            matchDate: 'asc',
-          },
-        })
+        const allMatches: (MatchWithTeams & { elapsed?: number })[] = []
+        let apiFetchSuccess = false
 
-        // Si hay datos en DB, devolver
-        if (dbMatches.length > 0) {
-          return dbMatches as MatchWithTeams[]
-        }
-
-        // Si no hay datos, consultar API-Football para todas las ligas
-        console.log(`[API] Fetching fixtures for today: ${todayStr}`)
-
-        const allMatches: MatchWithTeams[] = []
-
-        // Obtener fixtures de todas las ligas para hoy
+        // 1. Intentar consultar API-Football primero para tener datos LIVE
         try {
-          // Usamos getFixturesByDate para obtener todos los partidos del día en una sola llamada
+          console.log(`[API] Fetching fixtures for today: ${todayStr}`)
           const response = await getFixturesByDate(todayStr)
 
           if (response.response && response.response.length > 0) {
             const configuredLeagueIds = Object.values(LEAGUE_IDS) as number[]
 
-            // Filtrar solo las ligas que nos interesan
-            const relevantFixtures = response.response.filter(fixture => 
+            let relevantFixtures = response.response.filter(fixture =>
               configuredLeagueIds.includes(fixture.league.id)
             )
 
-            if (relevantFixtures.length === 0) {
-              console.log(`[API] No relevant fixtures found for today ${todayStr}`)
-            } else {
+            if (relevantFixtures.length > 0) {
               console.log(`[API] Found ${relevantFixtures.length} relevant fixtures for today`)
+              
+              // NEW: Fetch details (events) for relevant matches
+              // API-Football bulk endpoint does not return events, so we must fetch by ID
+              try {
+                const ids = relevantFixtures.map(f => f.fixture.id)
+                console.log(`[API] Fetching details for IDs: ${ids.length}`)
+                
+                const chunks = []
+                for (let i = 0; i < ids.length; i += 20) {
+                  chunks.push(ids.slice(i, i + 20))
+                }
 
-              // Procesar cada partido
+                const detailedPromises = chunks.map(chunk => getFixturesByIds(chunk))
+                const detailedResponses = await Promise.all(detailedPromises)
+                
+                const detailedMap = new Map()
+                detailedResponses.forEach(res => {
+                  if (res && res.response) {
+                    res.response.forEach(f => detailedMap.set(f.fixture.id, f))
+                  }
+                })
+
+                // Update relevantFixtures with detailed versions
+                relevantFixtures = relevantFixtures.map(f => detailedMap.get(f.fixture.id) || f)
+                console.log(`[API] Enhanced ${detailedMap.size} fixtures with details`)
+              } catch (err) {
+                console.error('[API] Error fetching match details:', err)
+                // Continue with basic info if details fail
+              }
+
+              apiFetchSuccess = true
+
               for (const fixture of relevantFixtures) {
                 // Obtener o crear equipos
                 const homeTeam = await prisma.team.upsert({
@@ -135,33 +119,24 @@ export async function GET(request: NextRequest) {
                 })
 
                 if (!league) {
+                  // Si no está en DB (ej: Ligue 1 antes del seed), la ignoramos para DB
+                  // pero podríamos querer devolverla en memoria si es crítico.
+                  // Por ahora mantenemos consistencia con DB.
                   console.warn(`[DB] League ${fixture.league.id} not found in database`)
                   continue
                 }
 
-                // Mapear status de API-Football a nuestro schema
+                // Mapear status
                 const mapStatus = (status: string): string => {
                   const statusMap: Record<string, string> = {
-                    TBD: 'NS',
-                    NS: 'NS',
-                    '1H': 'LIVE',
-                    HT: 'HT',
-                    '2H': 'LIVE',
-                    ET: 'LIVE',
-                    P: 'LIVE',
-                    FT: 'FT',
-                    AET: 'AET',
-                    PEN: 'PEN',
-                    PST: 'PST',
-                    CANC: 'CANC',
-                    ABD: 'ABD',
-                    AWD: 'FT',
-                    WO: 'FT',
+                    TBD: 'NS', NS: 'NS', '1H': 'LIVE', HT: 'HT', '2H': 'LIVE',
+                    ET: 'LIVE', P: 'LIVE', FT: 'FT', AET: 'AET', PEN: 'PEN',
+                    PST: 'PST', CANC: 'CANC', ABD: 'ABD', AWD: 'FT', WO: 'FT',
                   }
                   return statusMap[status] || 'NS'
                 }
 
-                // Crear o actualizar partido
+                // Crear o actualizar partido en DB
                 const match = await prisma.match.upsert({
                   where: { apiId: fixture.fixture.id },
                   update: {
@@ -180,41 +155,84 @@ export async function GET(request: NextRequest) {
                     awayScore: fixture.goals.away,
                   },
                   include: {
-                    homeTeam: {
-                      select: {
-                        id: true,
-                        apiId: true,
-                        name: true,
-                        logo: true,
-                        code: true,
-                      },
-                    },
-                    awayTeam: {
-                      select: {
-                        id: true,
-                        apiId: true,
-                        name: true,
-                        logo: true,
-                        code: true,
-                      },
-                    },
-                    league: {
-                      select: {
-                        id: true,
-                        name: true,
-                        country: true,
-                        logo: true,
-                      },
-                    },
+                    homeTeam: { select: { id: true, apiId: true, name: true, logo: true, code: true } },
+                    awayTeam: { select: { id: true, apiId: true, name: true, logo: true, code: true } },
+                    league: { select: { id: true, name: true, country: true, logo: true } },
                   },
                 })
 
-                allMatches.push(match as MatchWithTeams)
+                // Mapear eventos a Goles y Tarjetas
+                const events = fixture.events || []
+                
+                const goals = events
+                  .filter((e: any) => e.type === 'Goal')
+                  .map((e: any, index: number) => ({
+                    id: index, // ID temporal
+                    matchId: match.id,
+                    teamId: e.team.id === homeTeam.apiId ? homeTeam.id : awayTeam.id,
+                    playerName: e.player.name || 'Unknown',
+                    minute: e.time.elapsed || 0,
+                    extraTime: e.time.extra || null,
+                    type: (e.detail && e.detail === 'Penalty') ? 'Penalty' : (e.detail && e.detail === 'Own Goal') ? 'Own Goal' : 'Normal',
+                    createdAt: new Date(),
+                  }))
+
+                const cards = events
+                  .filter((e: any) => e.type === 'Card' && e.detail && (e.detail.includes('Red') || e.detail.includes('Yellow'))) 
+                  .map((e: any, index: number) => ({
+                    id: index,
+                    matchId: match.id,
+                    teamId: e.team.id === homeTeam.apiId ? homeTeam.id : awayTeam.id,
+                    playerName: e.player.name || 'Unknown',
+                    minute: e.time.elapsed || 0,
+                    type: e.detail.includes('Yellow') ? 'Yellow' : 'Red',
+                    createdAt: new Date(),
+                  }))
+
+                // Log debug info
+                if (goals.length > 0 || cards.length > 0) {
+                     console.log(`[API] Match ${match.id} has ${goals.length} goals and ${cards.length} cards`)
+                }
+
+                // Inyectar 'elapsed' time temporalmente en el objeto de respuesta
+                // (No se guarda en DB, pero se envía al frontend)
+                const matchResponse = {
+                  ...match,
+                  elapsed: fixture.fixture.status.elapsed,
+                  goals: goals,
+                  cards: cards
+                }
+
+                allMatches.push(matchResponse as MatchWithTeams)
               }
             }
           }
         } catch (error) {
           console.error(`[API] Error fetching fixtures for today:`, error)
+          apiFetchSuccess = false
+        }
+
+        // 2. Si falló la API o no trajo nada (y dudamos), hacemos fallback a DB
+        // Pero si apiFetchSuccess es true y allMatches tiene datos, usamos eso.
+        if (!apiFetchSuccess || allMatches.length === 0) {
+          console.log('[API] Fallback to database')
+          const dbMatches = await prisma.match.findMany({
+            where: {
+              matchDate: {
+                gte: today,
+                lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+              },
+            },
+            include: {
+              homeTeam: { select: { id: true, apiId: true, name: true, logo: true, code: true } },
+              awayTeam: { select: { id: true, apiId: true, name: true, logo: true, code: true } },
+              league: { select: { id: true, name: true, country: true, logo: true } },
+              goals: { orderBy: { minute: 'asc' } },
+              cards: { orderBy: { minute: 'asc' } },
+            },
+            orderBy: { matchDate: 'asc' },
+          })
+          return dbMatches as MatchWithTeams[]
         }
 
         return allMatches
@@ -231,13 +249,8 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('[API] Error in /api/matches/today:', error)
-
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Error al obtener partidos del día',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { success: false, error: 'Error al obtener partidos del día' },
       { status: 500 }
     )
   }

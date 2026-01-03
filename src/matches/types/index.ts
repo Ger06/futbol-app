@@ -49,16 +49,42 @@ export type MatchWithTeams = Match & {
     country: string
     logo?: string
   }
+  goals?: Goal[]
+  cards?: Card[]
+  elapsed?: number
 }
 
 export type MatchWithDetails = MatchWithTeams & {
   goals: Goal[]
   cards: Card[]
+  substitutions?: Substitution[]
   elapsed?: number
   stats?: {
     home: TeamStatsDetails
     away: TeamStatsDetails
   }
+  lineups?: {
+    home?: TeamLineup
+    away?: TeamLineup
+  }
+}
+
+export type TeamLineup = {
+  formation: string
+  coach: {
+    name: string
+    photo?: string
+  }
+  startXI: PlayerLineup[]
+  substitutes: PlayerLineup[]
+}
+
+export type PlayerLineup = {
+  id: number
+  name: string
+  number: number
+  pos: string
+  grid: string | null
 }
 
 export type TeamStatsDetails = {
@@ -93,6 +119,20 @@ export type Card = {
 }
 
 export type CardType = 'Yellow' | 'Red'
+
+export type Substitution = {
+  id: number
+  minute: number
+  teamId: number
+  playerOut: {
+    id: number
+    name: string
+  }
+  playerIn: {
+    id: number
+    name: string
+  }
+}
 
 // Tipos para respuestas de API-Football
 export type ApiFootballFixture = {
