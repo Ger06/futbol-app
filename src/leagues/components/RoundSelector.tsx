@@ -76,7 +76,9 @@ export function RoundSelector({
 
       {/* Jornada actual */}
       <div className="min-w-[200px] text-center">
-        <div className="text-lg font-bold text-[#c5a059] uppercase font-oswald tracking-widest">{currentRound}</div>
+        <div className="text-lg font-bold text-[#c5a059] uppercase font-oswald tracking-widest">
+            {currentRound.replace('Regular Season - ', 'Jornada ')}
+        </div>
         <div className="text-xs text-[#e6c885] font-mono">
           {currentIndex + 1} / {rounds.length}
         </div>

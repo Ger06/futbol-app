@@ -57,18 +57,14 @@ export function FixtureList({ leagueId, onMatchClick }: FixtureListProps) {
       {allFixtures.map((fixture) => (
         <div
           key={fixture.round}
-          className="rounded-lg border border-gray-200 bg-white shadow-sm"
+          className="rounded-lg border-2 border-[#8a6d3b] bg-[#1a120b] shadow-lg relative overflow-hidden"
         >
           {/* Header de la jornada */}
-          <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white px-6 py-4">
+          <div className="border-b border-[#8a6d3b] bg-[#1a120b] px-6 py-4 relative z-10">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">
+              <h3 className="text-xl font-bold font-marker text-[#c5a059] uppercase tracking-wide">
                 {fixture.round}
               </h3>
-              <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                {fixture.matches.length}{' '}
-                {fixture.matches.length === 1 ? 'partido' : 'partidos'}
-              </span>
             </div>
           </div>
 

@@ -53,24 +53,28 @@ export function FixtureSlider({
     if (initialRound) {
       setSelectedRound(initialRound)
     } else if (allFixtures && allFixtures.length > 0 && availableRounds && availableRounds.length > 0 && !selectedRound) {
-      // Estrategia: Buscar la primera jornada que tenga partidos pendientes o de hoy
-      // Si todas acabaron, mostrar la última.
-      const now = new Date()
-      now.setHours(0, 0, 0, 0)
-
-      const activeRound = allFixtures.find(fixtureRound => {
-         return fixtureRound.matches.some(m => {
-             const mDate = new Date(m.matchDate)
-             return mDate >= now || ['LIVE', '1H', '2H', 'HT', 'ET', 'NS'].includes(m.status)
-         })
+      // Estrategia: Buscar la jornada cuyo partido sea más cercano a la fecha actual.
+      // Esto evita quedarse "pegado" en jornadas viejas (ej: Jornada 16) solo porque tienen un partido postergado en el futuro,
+      // priorizando la jornada que se juega REALMENTE esta semana (ej: Jornada 18).
+      
+      const now = new Date().getTime()
+      
+      let closestMatchRound = availableRounds[availableRounds.length - 1]
+      let minDiff = Infinity
+      
+      allFixtures.forEach(fixtureRound => {
+        fixtureRound.matches.forEach(match => {
+           const matchTime = new Date(match.matchDate).getTime()
+           const diff = Math.abs(matchTime - now)
+           
+           if (diff < minDiff) {
+               minDiff = diff
+               closestMatchRound = fixtureRound.round
+           }
+        })
       })
 
-      if (activeRound) {
-          setSelectedRound(activeRound.round)
-      } else {
-          // Si no hay rondas activas (todo terminó), ir a la última
-          setSelectedRound(availableRounds[availableRounds.length - 1])
-      }
+      setSelectedRound(closestMatchRound)
     }
   }, [initialRound, availableRounds, selectedRound, allFixtures])
 
