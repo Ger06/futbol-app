@@ -31,7 +31,7 @@ export function PageLayout({
 }: PageLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
-      <main className="flex-1">
+      <main className="flex-1 pb-8">
         {/* Page Header */}
         {(title || description) && (
           <div className="mb-8">

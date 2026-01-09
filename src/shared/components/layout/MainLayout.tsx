@@ -27,7 +27,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Contenido Principal */}
       <main className="flex w-full flex-1 flex-col">
         {/* Padding superior en mobile para evitar overlap con botón hamburguesa */}
-        <div className="container mx-auto px-4 pt-4 lg:px-8">
+        <div className="container mx-auto px-4 pt-16 lg:px-8 lg:pt-4">
           {children}
         </div>
       </main>

@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <PageLayout
       title="Partidos de Hoy"
-      description={`Mostrando partidos del ${formattedDate} - Múltiples ligas`}
+      description={`${formattedDate}`}
     >
       <MatchesContainer groupByLeague />
     </PageLayout>

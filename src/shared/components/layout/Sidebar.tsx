@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LEAGUES_CONFIG } from '@/shared/constants/leagues'
+import { WorldCupCountdown } from './WorldCupCountdown'
 
 interface SidebarProps {
   className?: string
@@ -31,11 +32,11 @@ export function Sidebar({ className = '' }: SidebarProps) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 top-4 z-50 rounded-lg bg-white p-2 shadow-lg lg:hidden"
+        className="fixed left-4 top-4 z-50 rounded-lg bg-[#c5a059] p-2 shadow-lg lg:hidden"
         aria-label="Toggle sidebar"
       >
         <svg
-          className="h-6 w-6 text-gray-700"
+          className="h-6 w-6 text-[#2c241b]"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -62,10 +63,10 @@ export function Sidebar({ className = '' }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={`
-          top-0 z-40 h-screen w-64
+          fixed inset-y-0 left-0 z-40 h-screen w-64
           transform bg-[#1a120b] border-r-4 border-[#8a6d3b]
           text-[#f4f1ea] shadow-2xl transition-transform duration-300 ease-in-out
-          lg:translate-x-0
+          lg:static lg:translate-x-0
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           ${className}
           pt-4
@@ -89,6 +90,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
 
         {/* Navegación de Ligas */}
         <nav className="overflow-y-auto p-4 font-oswald" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+          <WorldCupCountdown />
           <div className="mb-3 px-3 text-sm font-bold uppercase tracking-widest text-[#8a6d3b] border-b border-[#8a6d3b]/30 pb-1">
             Competiciones
           </div>
