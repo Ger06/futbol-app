@@ -156,8 +156,9 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
                                MATCH_HIGHLIGHTS[`${match.homeTeam.code}-${match.awayTeam.code}`]
         const highlight = manualHighlight || getAutomatedHighlight(match)
         
-        // Ocultar si ya hay eventos (goles o tarjetas) que ocupen espacio
-        const hasEvents = (match.goals && match.goals.length > 0) || (match.cards && match.cards.length > 0)
+        // Ocultar si ya hay eventos VISIBLES (goles o tarjetas rojas) que ocupen espacio
+        const hasEvents = (match.goals && match.goals.length > 0) || 
+                         (match.cards && match.cards.some((c: any) => c.type === 'Red'))
         const isFinished = ['FT', 'AET', 'PEN'].includes(match.status)
 
         if (!highlight || hasEvents || isFinished) return null

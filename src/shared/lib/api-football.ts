@@ -11,6 +11,7 @@ export const LEAGUE_IDS = {
   SERIE_A: 135,             // Serie A (Italia)
   LIGA_PROFESIONAL: 128,    // Liga Profesional Argentina
   BRASILEIRAO: 71,          // Brasileirão Serie A
+  BUNDESLIGA: 78,           // Bundesliga (Alemania)
   MLS: 253,                 // MLS (Estados Unidos)
   LIGUE_1: 61,              // Ligue 1 (Francia)
 } as const

@@ -52,6 +52,16 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     color: '#FF4747',
   },
   {
+    id: 78, // Bundesliga
+    slug: 'bundesliga',
+    name: 'Bundesliga',
+    shortName: 'Bundesliga',
+    country: 'Alemania',
+    season: 2025,
+    icon: '🍺', // Beer (Representative)
+    color: '#D20515',
+  },
+  {
     id: 135, // Serie A
     slug: 'serie-a',
     name: 'Serie A',

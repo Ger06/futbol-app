@@ -80,6 +80,10 @@ export function EventsList({ goals, cards, homeTeam, awayTeam }: EventsListProps
   const homeEvents = allEvents.filter(e => e.teamId === homeTeam.id)
   const awayEvents = allEvents.filter(e => e.teamId === awayTeam.id)
 
+  if (allEvents.length === 0) {
+    return null
+  }
+
   const formatMinute = (minute: number, extraTime?: number | null) => {
     if (extraTime) {
       return `${minute}+${extraTime}'`
