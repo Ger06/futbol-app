@@ -18,7 +18,7 @@ interface FormBadgeProps {
  * ```
  */
 export function FormBadge({ form, limit = 5 }: FormBadgeProps) {
-  const recentForm = form.slice(-limit).reverse() // Últimos N resultados, más reciente primero
+  const recentForm = form.slice(-limit) // Últimos N resultados, sin invertir (si API ya viene ordenada o ajustando a peticion)
 
   if (recentForm.length === 0) {
     return (
