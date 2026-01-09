@@ -6,6 +6,7 @@ import { Card } from '@/shared/components/ui/Card'
 import { StatusBadge } from '@/shared/components/ui/Badge'
 import { EventsList } from './EventsList'
 import type { MatchWithTeams, MatchWithDetails } from '@/matches/types'
+import { MATCH_HIGHLIGHTS, getAutomatedHighlight } from '@/shared/constants/match-highlights'
 
 interface MatchCardProps {
   match: MatchWithTeams | MatchWithDetails
@@ -141,7 +142,6 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
         />
       )}
 
-      {/* Footer con Hora */}
       {!hasStarted && (
         <div className="mt-3 border-t border-gray-100 pt-2 text-center">
           <span className="text-sm font-medium text-[#8a6d3b]">
@@ -149,6 +149,38 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
           </span>
         </div>
       )}
+
+      {/* Sección Ojo al Dato */}
+      {(() => {
+        const manualHighlight = MATCH_HIGHLIGHTS[match.apiId?.toString()] || 
+                               MATCH_HIGHLIGHTS[`${match.homeTeam.code}-${match.awayTeam.code}`]
+        const highlight = manualHighlight || getAutomatedHighlight(match)
+        
+        // Ocultar si ya hay eventos (goles o tarjetas) que ocupen espacio
+        const hasEvents = (match.goals && match.goals.length > 0) || (match.cards && match.cards.length > 0)
+        const isFinished = ['FT', 'AET', 'PEN'].includes(match.status)
+
+        if (!highlight || hasEvents || isFinished) return null
+
+        return (
+          <div className="mt-3 rounded-sm border border-[#c5a059]/30 bg-[#c5a059]/10 p-2">
+            <div className="flex items-start gap-2">
+              <span className="text-lg">🧐</span>
+              <div>
+                <h4 className="font-marker text-[14px] uppercase text-[#c5a059] opacity-80">
+                  Ojo al dato
+                </h4>
+                <p className="font-oswald text-sm leading-tight text-[#f4f1ea]/90">
+                  {highlight.split(/(\d+%?|\d+\.\d+)/g).map((part, i) => 
+                    part.match(/(\d+%?|\d+\.\d+)/) ? <span key={i} className="font-bold text-[#f4f1ea]">{part}</span> : part
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       </div>
     </Card>
   )
