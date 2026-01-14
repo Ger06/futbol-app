@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const todayStr = today.toISOString().split('T')[0] // YYYY-MM-DD
 
     // Intentar obtener de cache
-    const cacheKey = `matches:today:${todayStr}`
+    const cacheKey = `matches:today:v2:${todayStr}`
 
     const matches = await cacheOrFetch<MatchWithTeams[]>(
       cacheKey,
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
                   include: {
                     homeTeam: { select: { id: true, apiId: true, name: true, logo: true, code: true } },
                     awayTeam: { select: { id: true, apiId: true, name: true, logo: true, code: true } },
-                    league: { select: { id: true, name: true, country: true, logo: true } },
+                    league: { select: { id: true, apiId: true, name: true, country: true, logo: true } },
                   },
                 })
 
@@ -226,7 +226,7 @@ export async function GET(request: NextRequest) {
             include: {
               homeTeam: { select: { id: true, apiId: true, name: true, logo: true, code: true } },
               awayTeam: { select: { id: true, apiId: true, name: true, logo: true, code: true } },
-              league: { select: { id: true, name: true, country: true, logo: true } },
+              league: { select: { id: true, apiId: true, name: true, country: true, logo: true } },
               goals: { orderBy: { minute: 'asc' } },
               cards: { orderBy: { minute: 'asc' } },
             },
@@ -242,11 +242,21 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    return NextResponse.json({
+    const resultData = {
       success: true,
       data: matches,
       count: matches.length,
-    })
+    }
+
+    if (matches.length > 0) {
+      console.log('API RESPONSE DEBUG:', matches.map(m => ({
+        id: m.id,
+        league: m.league,
+        hasApiId: 'apiId' in m.league,
+      })).slice(0, 3)) // Log first 3 matches
+    }
+
+    return NextResponse.json(resultData)
   } catch (error) {
     console.error('[API] Error in /api/matches/today:', error)
     return NextResponse.json(

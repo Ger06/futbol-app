@@ -66,7 +66,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
           fixed inset-y-0 left-0 z-40 h-screen w-64
           transform bg-[#1a120b] border-r-4 border-[#8a6d3b]
           text-[#f4f1ea] shadow-2xl transition-transform duration-300 ease-in-out
-          lg:static lg:translate-x-0
+          lg:sticky lg:top-0 lg:translate-x-0 lg:h-screen lg:overflow-y-auto
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           ${className}
           pt-4
@@ -89,7 +89,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
         </div>
 
         {/* Navegación de Ligas */}
-        <nav className="overflow-y-auto p-4 font-oswald" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+        <nav className="p-4 font-oswald">
           <WorldCupCountdown />
           <div className="mb-3 px-3 text-sm font-bold uppercase tracking-widest text-[#8a6d3b] border-b border-[#8a6d3b]/30 pb-1">
             Competiciones
@@ -139,7 +139,7 @@ export function Sidebar({ className = '' }: SidebarProps) {
           </ul>
 
           {/* Link a "Todos los partidos" */}
-          <div className="mt-6 border-t-2 border-[#8a6d3b] pt-4">
+          <div className="mt-6 border-t-2 border-[#8a6d3b] pt-4 space-y-2">
             <Link
               href="/"
               onClick={() => setIsOpen(false)}
@@ -158,6 +158,26 @@ export function Sidebar({ className = '' }: SidebarProps) {
               <div className={`flex-1 ${pathname === '/' ? 'skew-x-[10deg]' : 'group-hover:skew-x-[5deg]'}`}>
                 <div className="text-sm leading-tight">Todos los partidos</div>
                 <div className={`text-[10px] ${pathname === '/' ? 'text-white/80' : 'text-[#8a6d3b]'}`}>Hoy</div>
+              </div>
+            </Link>
+
+            <Link
+              href="/contact"
+              onClick={() => setIsOpen(false)}
+              className={`
+                flex items-center space-x-3 px-3 py-3
+                transition-all duration-200 uppercase tracking-wide font-oswald
+                ${
+                  pathname === '/contact'
+                    ? 'bg-[#2c241b] text-[#c5a059] font-bold skew-x-[-10deg] border-2 border-[#c5a059]'
+                    : 'text-[#e6c885] hover:text-[#c5a059] hover:bg-[#c5a059]/10 hover:skew-x-[-5deg]'
+                }
+              `}
+            >
+              <span className="text-2xl">📩</span>
+              <div className={`flex-1 ${pathname === '/contact' ? 'skew-x-[10deg]' : 'group-hover:skew-x-[5deg]'}`}>
+                <div className="text-sm leading-tight text-[#f4f1ea]">¿Tenés dudas?</div>
+                <div className="text-[10px] text-[#c5a059]">Mejoras? Escribime</div>
               </div>
             </Link>
           </div>

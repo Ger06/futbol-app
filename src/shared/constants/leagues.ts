@@ -13,6 +13,7 @@ export interface LeagueConfig {
   season: number // Temporada actual
   icon: string // Emoji o ícono
   color: string // Color primario para UI
+  broadcasters?: string[] // Logos de broadcasters (URLs)
 }
 
 /**
@@ -30,6 +31,10 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🏆', // Trophy fits the user request for "Logo de la champions" as best as possible with emoji
     color: '#00338D',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png',
+      'https://commons.wikimedia.org/wiki/File:FOX_Sports_logo.svg#/media/File:FOX_Sports_logo.svg'
+    ],
   },
   {
     id: 39, // Premier League
@@ -40,6 +45,9 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🌹', // User request: Red Rose
     color: '#38003C',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'
+    ],
   },
   {
     id: 140, // La Liga
@@ -50,6 +58,11 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🐂', // Bull (Representative)
     color: '#FF4747',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/DirecTV_Sports_logo_2018.png/250px-DirecTV_Sports_logo_2018.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Fox_Sports_Latin_America_2012.svg/100px-Fox_Sports_Latin_America_2012.svg.png'
+    ],
   },
   {
     id: 78, // Bundesliga
@@ -60,6 +73,10 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🍺', // Beer (Representative)
     color: '#D20515',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/0/0c/FOX_Sports_logo.svg'
+    ],
   },
   {
     id: 135, // Serie A
@@ -70,6 +87,9 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🍝', // Pizza (Representative)
     color: '#024494',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'
+    ],
   },
   {
     id: 128, // Liga Profesional Argentina
@@ -80,6 +100,10 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🧉', // User request: Mate
     color: '#75AADB',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/TyC_Sports_logo.svg/100px-TyC_Sports_logo.svg.png',
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'
+    ],
   },
   {
     id: 71, // Brasileirão Serie A
@@ -90,6 +114,11 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🌴', // Palm Tree (Representative)
     color: '#009C3B',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png',
+      // Adding Premiere/Globo generic placeholder
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Premiere_FC_logo.svg/100px-Premiere_FC_logo.svg.png'
+    ],
   },
   {
     id: 253, // Major League Soccer
@@ -100,6 +129,9 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🗽', // Statue of Liberty (Representative)
     color: '#C2C2C2',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Apple_TV_logo.svg/100px-Apple_TV_logo.svg.png'
+    ],
   },
   {
     id: 61, // Ligue 1
@@ -110,6 +142,9 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🥐', // Croissant (Representative)
     color: '#DAE2F3',
+    broadcasters: [
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'
+    ],
   },
 ]
 

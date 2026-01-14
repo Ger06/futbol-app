@@ -45,6 +45,7 @@ export type MatchWithTeams = Match & {
   }
   league: {
     id: number
+    apiId?: number // Added for reliable lookup
     name: string
     country: string
     logo?: string
