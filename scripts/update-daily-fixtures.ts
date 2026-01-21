@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import path from 'path'
 import { prisma } from '../src/shared/lib/prisma'
-import { getFixtures, LEAGUE_IDS } from '../src/shared/lib/api-football'
+import { getFixturesByDate } from '../src/shared/lib/api-football'
 
 // Load .env.local file FIRST before importing Prisma Client
 dotenv.config({ path: path.join(__dirname, '../.env.local') })
@@ -11,7 +11,6 @@ if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is not set in .env.local')
 }
 
-//const TARGET_DATE = '2023-08-15' // Fecha de inicio de temporada 2023/24 en Europa
 const DELAY_BETWEEN_REQUESTS = 1000 // 1 segundo entre requests para evitar rate limiting
 
 // Función helper para esperar
@@ -39,28 +38,52 @@ function mapStatus(apiStatus: string): string {
   return statusMap[apiStatus] || 'NS'
 }
 
-async function seedFixtures() {
+// Obtener fechas para actualizar (hoy, ayer, mañana)
+function getDatesToUpdate(): string[] {
+  const dates: string[] = []
+  const today = new Date()
 
+  // Ayer (para actualizar resultados finales)
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  dates.push(yesterday.toISOString().split('T')[0])
+
+  // Hoy
+  dates.push(today.toISOString().split('T')[0])
+
+  // Mañana (para obtener próximos partidos)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  dates.push(tomorrow.toISOString().split('T')[0])
+
+  return dates
+}
+
+async function updateDailyFixtures() {
   let totalMatches = 0
   let totalTeams = 0
   let totalGoals = 0
 
-  const leagueEntries = Object.entries(LEAGUE_IDS)
+  const dates = getDatesToUpdate()
 
-  for (let i = 0; i < leagueEntries.length; i++) {
-    const [leagueName, leagueApiId] = leagueEntries[i]
+  console.log('📅 Actualizando fixtures para las siguientes fechas:')
+  dates.forEach(date => console.log(`   - ${date}`))
+  console.log()
 
-    console.log(`\n📥 [${i + 1}/${leagueEntries.length}] Fetching ${leagueName} (ID: ${leagueApiId})...`)
+  for (let i = 0; i < dates.length; i++) {
+    const date = dates[i]
+
+    console.log(`\n📥 [${i + 1}/${dates.length}] Fetching fixtures for ${date}...`)
 
     try {
-      // Obtener fixtures de API-Football
-      const response = await getFixtures(leagueApiId, 2025)
+      // Obtener fixtures de la fecha específica
+      const response = await getFixturesByDate(date)
 
       if (!response.response || response.response.length === 0) {
-        console.log(`   ℹ️  No fixtures found for ${leagueName}`)
+        console.log(`   ℹ️  No fixtures found for ${date}`)
 
         // Esperar antes del siguiente request
-        if (i < leagueEntries.length - 1) {
+        if (i < dates.length - 1) {
           await wait(DELAY_BETWEEN_REQUESTS)
         }
         continue
@@ -68,19 +91,19 @@ async function seedFixtures() {
 
       console.log(`   ✅ Found ${response.response.length} fixtures`)
 
-      // Buscar la liga en la base de datos
-      const league = await prisma.league.findFirst({
-        where: { apiId: leagueApiId },
-      })
-
-      if (!league) {
-        console.warn(`   ⚠️  League ${leagueName} not found in database, skipping...`)
-        continue
-      }
-
       // Procesar cada fixture
       for (const fixture of response.response) {
         try {
+          // Buscar la liga en la base de datos
+          const league = await prisma.league.findFirst({
+            where: { apiId: fixture.league.id },
+          })
+
+          if (!league) {
+            // Si la liga no está en nuestra BD, saltarla
+            continue
+          }
+
           // 1. Upsert equipos
           const homeTeam = await prisma.team.upsert({
             where: { apiId: fixture.teams.home.id },
@@ -142,6 +165,11 @@ async function seedFixtures() {
 
           // 3. Procesar goles si existen
           if (fixture.events && fixture.events.length > 0) {
+            // Primero eliminar goles existentes para evitar duplicados
+            await prisma.goal.deleteMany({
+              where: { matchId: match.id },
+            })
+
             const goalEvents = fixture.events.filter(
               (event: any) => event.type === 'Goal'
             )
@@ -171,38 +199,40 @@ async function seedFixtures() {
             }
           }
 
-          console.log(`   💾 ${homeTeam.name} vs ${awayTeam.name} - ${mapStatus(fixture.fixture.status.short)}`)
+          console.log(
+            `   💾 ${homeTeam.name} vs ${awayTeam.name} - ${mapStatus(fixture.fixture.status.short)}`
+          )
         } catch (matchError) {
           console.error(`   ❌ Error processing match ${fixture.fixture.id}:`, matchError)
         }
       }
 
       // Esperar antes del siguiente request para respetar rate limit
-      if (i < leagueEntries.length - 1) {
+      if (i < dates.length - 1) {
         console.log(`   ⏳ Waiting ${DELAY_BETWEEN_REQUESTS}ms before next request...`)
         await wait(DELAY_BETWEEN_REQUESTS)
       }
     } catch (error) {
-      console.error(`   ❌ Error fetching ${leagueName}:`, error)
+      console.error(`   ❌ Error fetching fixtures for ${date}:`, error)
     }
   }
 
   console.log('\n' + '='.repeat(60))
-  console.log('✅ Seed completed!')
+  console.log('✅ Daily update completed!')
   console.log('='.repeat(60))
-  console.log(`📊 Total matches: ${totalMatches}`)
-  console.log(`👥 Total teams: ${totalTeams}`)
-  console.log(`⚽ Total goals: ${totalGoals}`)
+  console.log(`📊 Total matches processed: ${totalMatches}`)
+  console.log(`👥 Total teams processed: ${totalTeams}`)
+  console.log(`⚽ Total goals processed: ${totalGoals}`)
   console.log('='.repeat(60))
 }
 
 async function main() {
-  await seedFixtures()
+  await updateDailyFixtures()
 }
 
 main()
   .catch((error) => {
-    console.error('❌ Error seeding fixtures:', error)
+    console.error('❌ Error updating daily fixtures:', error)
     process.exit(1)
   })
   .finally(async () => {
