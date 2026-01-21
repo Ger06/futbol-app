@@ -248,14 +248,6 @@ export async function GET(request: NextRequest) {
       count: matches.length,
     }
 
-    if (matches.length > 0) {
-      console.log('API RESPONSE DEBUG:', matches.map(m => ({
-        id: m.id,
-        league: m.league,
-        hasApiId: 'apiId' in m.league,
-      })).slice(0, 3)) // Log first 3 matches
-    }
-
     return NextResponse.json(resultData)
   } catch (error) {
     console.error('[API] Error in /api/matches/today:', error)

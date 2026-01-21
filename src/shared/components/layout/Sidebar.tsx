@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { LEAGUES_CONFIG } from '@/shared/constants/leagues'
 import { WorldCupCountdown } from './WorldCupCountdown'
@@ -26,31 +27,59 @@ export function Sidebar({ className = '' }: SidebarProps) {
   // Determinar qué liga está activa basado en la URL
   const activeLeagueSlug = pathname.split('/')[1] || null
 
+  // Bloquear scroll del body cuando el sidebar está abierto en mobile
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
   return (
     <>
-      {/* Botón hamburguesa - Solo visible en mobile */}
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 top-4 z-50 rounded-lg bg-[#c5a059] p-2 shadow-lg lg:hidden"
-        aria-label="Toggle sidebar"
-      >
-        <svg
-          className="h-6 w-6 text-[#2c241b]"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+      {/* Header Mobile - Muestra logo y botón hamburguesa */}
+      <header className="fixed top-0 left-0 right-0 z-30 flex h-16 items-center justify-between border-b-2 border-[#8a6d3b] bg-[#1a120b] px-4 shadow-lg lg:hidden">
+        {/* Botón hamburguesa */}
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="rounded-lg p-2 text-[#c5a059] hover:bg-[#c5a059]/10"
+          aria-label="Open sidebar"
         >
-          {isOpen ? (
-            <path d="M6 18L18 6M6 6l12 12" />
-          ) : (
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path d="M4 6h16M4 12h16M4 18h16" />
-          )}
-        </svg>
-      </button>
+          </svg>
+        </button>
+
+        {/* Logo Centrado */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
+          <Link href="/" onClick={() => setIsOpen(false)} className="block h-10 w-auto">
+            <Image 
+              src="/logos/hagangol-icon-dark.jpg" 
+              alt="HaganGol Icon" 
+              width={40}
+              height={40}
+              className="h-full w-auto object-contain drop-shadow-lg rounded-full"
+              priority
+            />
+          </Link>
+        </div>
+
+        {/* Spacer para balancear el layout */}
+        <div className="w-10"></div>
+      </header>
 
       {/* Overlay para mobile - Click fuera cierra el sidebar */}
       {isOpen && (
@@ -63,27 +92,41 @@ export function Sidebar({ className = '' }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-40 h-screen w-64
+          fixed inset-y-0 left-0 z-40 h-screen w-64 overflow-y-auto
           transform bg-[#1a120b] border-r-4 border-[#8a6d3b]
           text-[#f4f1ea] shadow-2xl transition-transform duration-300 ease-in-out
-          lg:sticky lg:top-0 lg:translate-x-0 lg:h-screen lg:overflow-y-auto
+          lg:sticky lg:top-0 lg:translate-x-0 lg:h-screen
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           ${className}
           pt-4
         `}
       >
-        {/* Header del Sidebar */}
         <div className="border-b-2 border-[#8a6d3b] p-6 bg-[url('/textures/grunge.png')] bg-cover relative overflow-hidden">
             <div className="absolute inset-0 bg-[#c5a059]/10 pointer-events-none" />
+            
+            {/* Botón Cerrar (Mobile) */}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute right-2 top-2 z-20 rounded-full p-2 text-[#c5a059] hover:bg-[#c5a059]/20 lg:hidden"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           <Link
             href="/"
             onClick={() => setIsOpen(false)}
-            className="flex items-center space-x-3 transition-transform hover:scale-105 relative z-10"
+            className="flex items-center space-x-3 transition-transform relative z-10"
           >
-            <span className="text-3xl drop-shadow-md">⚽</span>
-            <div>
-              <h1 className="text-2xl font-bold font-marker text-[#c5a059] tracking-wider drop-shadow-sm uppercase skew-x-[-10deg]">Futbol Live</h1>
-              <p className="text-xs text-[#e6c885] font-oswald uppercase tracking-widest">Road to Cup</p>
+            <div className="relative z-10">
+               <Image 
+                 src="/logos/newhagangol.png" 
+                 alt="HaganGol Logo" 
+                 width={180} 
+                 height={60} 
+                 className="drop-shadow-lg transition-transform"
+                 priority
+               />
             </div>
           </Link>
         </div>

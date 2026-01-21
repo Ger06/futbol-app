@@ -8,12 +8,28 @@
  * para un partido en concreto (ej: un partido va por Star+ en vez de ESPN).
  */
 
-export const MATCH_BROADCASTERS: Record<string, string[]> = {
-  // Ejemplo por ID de partido (prioridad alta)
-  // '1035043': ['https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'],
+export type Broadcaster = string | { url: string; channel: string }
+
+export const MATCH_BROADCASTERS: Record<string, Broadcaster[]> = {
+  // Ejemplo por ID (apiId) de partido (prioridad alta)
+  // Ejemplo por ID (apiId) de partido (prioridad alta)
+  '1451137': [
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png',
+    'https://upload.wikimedia.org/wikipedia/commons/b/b2/Fox_Sports_Argentina_2023.svg',
+    { 
+      url: 'https://magistv.bio/wp-content/uploads/2024/07/magistv-logo.webp', 
+      channel: '336' 
+    }
+  ],
+  // '1451137': ['https://upload.wikimedia.org/wikipedia/commons/b/b2/Fox_Sports_Argentina_2023.svg']
+  // '11241': ['https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/DirecTV_Sports_logo_2018.png/250px-DirecTV_Sports_logo_2018.png']
+
 
   // Ejemplo por Código de Equipos (HOME-AWAY) (prioridad media)
-  // 'LIV-MCI': ['https://...'],
+  'QAR-EIN': [{ 
+      url: 'https://magistv.bio/wp-content/uploads/2024/07/magistv-logo.webp', 
+      channel: '687' 
+    }],
 }
 
 /**
@@ -21,9 +37,9 @@ export const MATCH_BROADCASTERS: Record<string, string[]> = {
  * si están definidos manualmente.
  * 
  * @param match El objeto del partido
- * @returns string[] | null
+ * @returns Broadcaster[] | null
  */
-export function getManualBroadcasters(match: any): string[] | null {
+export function getManualBroadcasters(match: any): Broadcaster[] | null {
   // 1. Buscar por API ID
   if (match.apiId) {
     const byId = MATCH_BROADCASTERS[match.apiId.toString()]

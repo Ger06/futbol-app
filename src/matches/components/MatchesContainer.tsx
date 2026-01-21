@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useMatchesToday, useMatchesByDate } from '@/matches/hooks'
+import { useMatchesToday } from '@/matches/hooks'
 import { MatchList } from './MatchList'
 import { LoadingSection } from '@/shared/components/ui/LoadingSpinner'
 
@@ -37,9 +37,9 @@ export function MatchesContainer({
 }: MatchesContainerProps) {
   // Usar el hook apropiado según si hay fecha o no
   const todayQuery = useMatchesToday()
-  const dateQuery = useMatchesByDate(date || '')
+  // const dateQuery = useMatchesByDate(date || '')
 
-  const { data: matches, isLoading, error } = date ? dateQuery : todayQuery
+  const { data: matches, isLoading, error } = todayQuery
 
   if (isLoading) {
     return <LoadingSection />

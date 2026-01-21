@@ -204,15 +204,28 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
         {/* Broadcaster Column (Right Side) */}
         {broadcasters && broadcasters.length > 0 && (
           <div className="flex flex-col justify-center items-center gap-2 border-l border-white/10 pl-4 min-w-[40px]">
-             {broadcasters.map((logo, index) => (
-                <div key={index} className="bg-white/90 p-1 rounded-sm shadow-sm w-8 h-8 flex items-center justify-center">
-                   <img 
-                      src={logo} 
-                      alt="Broadcaster" 
-                      className="max-w-full max-h-full object-contain"
-                   />
+             {broadcasters.map((item, index) => {
+               const isObject = typeof item === 'object'
+               const logoUrl = isObject ? item.url : item
+               const channel = isObject ? item.channel : null
+
+               return (
+                <div key={index} className="flex flex-col items-center gap-0.5">
+                  <div className="bg-white/90 p-1 rounded-sm shadow-sm w-8 h-8 flex items-center justify-center">
+                     <img 
+                        src={logoUrl} 
+                        alt="Broadcaster" 
+                        className="max-w-full max-h-full object-contain"
+                     />
+                  </div>
+                  {channel && (
+                    <span className="text-[10px] font-bold text-white/90 leading-none shadow-black drop-shadow-md">
+                      {channel}
+                    </span>
+                  )}
                 </div>
-             ))}
+               )
+             })}
           </div>
         )}
       </div>

@@ -26,8 +26,8 @@ const oswald = Oswald({
   subsets: ["latin"],
 });
 
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Fútbol en Vivo";
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "HaganGol";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hagangol.com.ar";
 
 export const metadata: Metadata = {
   title: {

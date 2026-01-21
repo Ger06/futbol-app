@@ -1,6 +1,12 @@
 import { PageLayout } from '@/shared/components/layout'
 import { MatchesContainer } from '@/matches/components'
 
+import { type Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Partidos de Hoy',
+}
+
 /**
  * Home Page - Página principal con partidos del día
  *
