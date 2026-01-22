@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Obtener broadcasters existentes
-        const existingBroadcasters = (match.broadcasters as Broadcaster[]) || []
+        const existingBroadcasters = (match.broadcasters as unknown as Broadcaster[]) || []
 
         // Combinar: mantener existentes que no se estén agregando de nuevo
         const newChannelNames = matchInput.broadcasters.map(b => b.channel.toLowerCase())
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
         await prisma.match.update({
           where: { id: match.id },
           data: {
-            broadcasters: updatedBroadcasters
+            broadcasters: updatedBroadcasters as unknown as any
           }
         })
 
