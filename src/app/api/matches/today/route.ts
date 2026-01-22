@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const todayStr = today.toISOString().split('T')[0] // YYYY-MM-DD
 
     // Intentar obtener de cache
-    const cacheKey = `matches:today:v7:${todayStr}`
+    const cacheKey = `matches:today:v9:${todayStr}`
 
     const matches = await cacheOrFetch<MatchWithTeams[]>(
       cacheKey,
@@ -83,9 +83,10 @@ export async function GET(request: NextRequest) {
               // Ajustar a zona horaria "target" (aprox UTC-3 para Latam/Argentina)
               // No usamos librerías pesadas, simple offset
               const OFFSET_HOURS = -3
+              const now = new Date() // Use fresh date, as 'today' variable was mutated to 00:00
               
               const localMatchDate = new Date(matchDate.getTime() + (OFFSET_HOURS * 60 * 60 * 1000))
-              const localToday = new Date(today.getTime() + (OFFSET_HOURS * 60 * 60 * 1000))
+              const localToday = new Date(now.getTime() + (OFFSET_HOURS * 60 * 60 * 1000))
               
               const matchDayStr = localMatchDate.toISOString().split('T')[0]
               const todayDayStr = localToday.toISOString().split('T')[0]

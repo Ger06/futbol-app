@@ -17,6 +17,7 @@ interface MatchCardProps {
 
 import { getLeagueById } from '@/shared/constants/leagues'
 import { getManualBroadcasters } from '@/shared/constants/match-broadcasters'
+import { getBroadcasterLogo } from '@/shared/constants/broadcaster-logos'
 
 /**
  * MatchCard - Tarjeta individual de partido
@@ -224,21 +225,26 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
           <div className="flex flex-col justify-center items-center gap-2 border-l border-white/10 pl-4 min-w-[40px]">
              {broadcasters.map((item, index) => {
                const isObject = typeof item === 'object'
-               const logoUrl = isObject ? item.url : item
-               const channel = isObject ? item.channel : null
+               // Prioridad: url del objeto > buscar por nombre del canal > url como string
+               const channelName = isObject ? item.channel : null
+               const logoUrl = (isObject ? item.url : null)
+                 || (channelName ? getBroadcasterLogo(channelName) : null)
+                 || (typeof item === 'string' ? (getBroadcasterLogo(item) || item) : null)
+
+               if (!logoUrl) return null
 
                return (
                 <div key={index} className="flex flex-col items-center gap-0.5">
                   <div className="bg-white/90 p-1 rounded-sm shadow-sm w-8 h-8 flex items-center justify-center">
-                     <img 
-                        src={logoUrl} 
-                        alt="Broadcaster" 
+                     <img
+                        src={logoUrl}
+                        alt={channelName || 'Broadcaster'}
                         className="max-w-full max-h-full object-contain"
                      />
                   </div>
-                  {channel && (
+                  {channelName && channelName.toLowerCase().includes('magic') && (
                     <span className="text-[10px] font-bold text-white/90 leading-none shadow-black drop-shadow-md">
-                      {channel}
+                      {channelName.replace(/magic\s*/i, '')}
                     </span>
                   )}
                 </div>
