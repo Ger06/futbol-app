@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/lib/prisma'
-import { enrichMatch } from '@/shared/lib/gemini'
+import { enrichMatch } from '@/shared/lib/groq'
 
 function verifyAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization')
@@ -43,6 +43,8 @@ export async function GET(request: NextRequest) {
         // Solo partidos que aún no tienen highlight automático
         OR: [
           { highlight: null },
+          { highlight: '' },
+          { highlightType: null },
           { highlightType: { not: 'AUTO' } }
         ]
       },
