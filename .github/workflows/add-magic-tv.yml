@@ -1,69 +1,92 @@
-name: Add Magic TV Channel
+name: Add Broadcasters (TV Channels)
 
 on:
   workflow_dispatch:
     inputs:
-      home_team:
-        description: 'Equipo local (ej: Barcelona, River, Boca)'
+      mode:
+        description: 'Modo: single (un partido) o bulk (varios)'
         required: true
+        default: 'bulk'
+        type: choice
+        options:
+          - bulk
+          - single
+      input:
+        description: 'BULK: "River vs Boca: ESPN, Magic 503 | Racing vs Indep: Fox"'
+        required: false
+        type: string
+      home_team:
+        description: 'SINGLE: Equipo local (ej: River)'
+        required: false
         type: string
       away_team:
-        description: 'Equipo visitante (ej: Real Madrid, Racing)'
-        required: true
+        description: 'SINGLE: Equipo visitante (ej: Boca)'
+        required: false
         type: string
       channel:
-        description: 'Canal Magic TV (ej: 336, ESPN)'
-        required: true
+        description: 'SINGLE: Canal (ej: ESPN o Magic 503)'
+        required: false
         type: string
 
 jobs:
-  add-channel:
+  add-broadcasters:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
-      - name: Add Magic TV channel to match
+      - name: Add broadcasters to matches
         run: |
-          echo "Agregando Magic TV ${{ github.event.inputs.channel }} a:"
-          echo "  ${{ github.event.inputs.home_team }} vs ${{ github.event.inputs.away_team }}"
+          echo "Modo: ${{ github.event.inputs.mode }}"
+          echo ""
+
+          if [ "${{ github.event.inputs.mode }}" == "bulk" ]; then
+            echo "Procesando múltiples partidos..."
+            echo "Input: ${{ github.event.inputs.input }}"
+
+            PAYLOAD=$(jq -n --arg input "${{ github.event.inputs.input }}" '{input: $input}')
+          else
+            echo "Procesando partido individual..."
+            echo "${{ github.event.inputs.home_team }} vs ${{ github.event.inputs.away_team }}: ${{ github.event.inputs.channel }}"
+
+            PAYLOAD=$(jq -n \
+              --arg home "${{ github.event.inputs.home_team }}" \
+              --arg away "${{ github.event.inputs.away_team }}" \
+              --arg channel "${{ github.event.inputs.channel }}" \
+              '{homeTeam: $home, awayTeam: $away, channel: $channel}')
+          fi
+
+          echo ""
+          echo "Payload: $PAYLOAD"
           echo ""
 
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "${{ secrets.SITE_URL }}/api/admin/add-magic-tv" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{
-              "homeTeam": "${{ github.event.inputs.home_team }}",
-              "awayTeam": "${{ github.event.inputs.away_team }}",
-              "channel": "${{ github.event.inputs.channel }}"
-            }')
+            -d "$PAYLOAD")
 
-          # Separar body y status code
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
 
           echo "HTTP Status: $HTTP_CODE"
           echo "Response: $BODY"
 
-          # Verificar respuesta exitosa
           if [ "$HTTP_CODE" == "200" ]; then
             echo ""
-            echo "=== Agregado exitosamente ==="
-            echo "$BODY" | jq -r '.message // "Canal agregado"'
-          elif [ "$HTTP_CODE" == "404" ]; then
+            echo "=== Resultado ==="
+            echo "$BODY" | jq -r '.message // "OK"'
             echo ""
-            echo "=== Partido no encontrado ==="
-            echo "Verifica que los nombres de equipos sean correctos"
-            echo "$BODY" | jq -r '.error // "No encontrado"'
-            exit 1
+            echo "Partidos actualizados:"
+            echo "$BODY" | jq -r '.results[]?.match // empty'
+
+            if [ "$(echo "$BODY" | jq -r '.errors | length')" != "0" ]; then
+              echo ""
+              echo "Errores:"
+              echo "$BODY" | jq -r '.errors[]? | "\(.match): \(.error)"'
+            fi
           else
             echo ""
             echo "=== Error ==="
             echo "$BODY" | jq -r '.error // "Error desconocido"'
             exit 1
           fi
-
-      - name: Summary
-        if: success()
-        run: |
-          echo "Magic TV ${{ github.event.inputs.channel }} agregado a ${{ github.event.inputs.home_team }} vs ${{ github.event.inputs.away_team }}"
