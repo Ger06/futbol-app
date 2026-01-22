@@ -24,6 +24,11 @@ export type Match = {
   awayScore?: number
   venue?: string
   referee?: string
+  
+  // Automation fields
+  broadcasters?: any // Json
+  highlight?: string | null
+  highlightType?: string | null
   createdAt: Date
   updatedAt: Date
 }
