@@ -13,20 +13,64 @@ function verifyAuth(request: NextRequest): boolean {
   return authHeader === `Bearer ${adminKey}`
 }
 
-interface MagicTvRequest {
+interface Broadcaster {
+  channel: string
+  type: 'official' | 'magic'
+}
+
+interface MatchBroadcasters {
   homeTeam: string
   awayTeam: string
-  channel: string
+  broadcasters: Broadcaster[]
 }
 
 /**
- * POST /api/admin/add-magic-tv
- * Agrega un canal de Magic TV a un partido específico
+ * Parsea un string con formato:
+ * "River vs Boca: ESPN, Magic 503 | Racing vs Independiente: Fox, Magic 340"
+ */
+function parseInput(input: string): MatchBroadcasters[] {
+  const results: MatchBroadcasters[] = []
+
+  // Separar por | para múltiples partidos
+  const matchParts = input.split('|').map(s => s.trim()).filter(s => s.length > 0)
+
+  for (const part of matchParts) {
+    // Separar equipos de canales por :
+    const [teamsPart, channelsPart] = part.split(':').map(s => s.trim())
+
+    if (!teamsPart || !channelsPart) continue
+
+    // Parsear equipos (separados por "vs")
+    const teamsMatch = teamsPart.match(/(.+?)\s+vs\s+(.+)/i)
+    if (!teamsMatch) continue
+
+    const homeTeam = teamsMatch[1].trim()
+    const awayTeam = teamsMatch[2].trim()
+
+    // Parsear canales (separados por ,)
+    const channels = channelsPart.split(',').map(s => s.trim()).filter(s => s.length > 0)
+
+    const broadcasters: Broadcaster[] = channels.map(channel => ({
+      channel,
+      type: channel.toLowerCase().includes('magic') ? 'magic' : 'official'
+    }))
+
+    results.push({ homeTeam, awayTeam, broadcasters })
+  }
+
+  return results
+}
+
+/**
+ * POST /api/admin/add-broadcasters
+ * Agrega broadcasters a partidos
  *
- * Body:
- * - homeTeam: nombre del equipo local (búsqueda parcial)
- * - awayTeam: nombre del equipo visitante (búsqueda parcial)
- * - channel: número o nombre del canal Magic TV (ej: "336", "ESPN Magic")
+ * Body puede ser:
+ * 1. Formato simple (un partido):
+ *    { "homeTeam": "River", "awayTeam": "Boca", "channel": "Magic 503" }
+ *
+ * 2. Formato bulk (múltiples partidos):
+ *    { "input": "River vs Boca: ESPN, Magic 503 | Racing vs Independiente: Fox, Magic 340" }
  */
 export async function POST(request: NextRequest) {
   if (!verifyAuth(request)) {
@@ -37,110 +81,121 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body: MagicTvRequest = await request.json()
+    const body = await request.json()
 
-    if (!body.homeTeam || !body.awayTeam || !body.channel) {
+    let matchesToProcess: MatchBroadcasters[] = []
+
+    // Detectar formato del input
+    if (body.input) {
+      // Formato bulk: parsear string
+      matchesToProcess = parseInput(body.input)
+    } else if (body.homeTeam && body.awayTeam && body.channel) {
+      // Formato simple: un solo partido
+      matchesToProcess = [{
+        homeTeam: body.homeTeam,
+        awayTeam: body.awayTeam,
+        broadcasters: [{
+          channel: body.channel,
+          type: body.channel.toLowerCase().includes('magic') ? 'magic' : 'official'
+        }]
+      }]
+    } else {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: homeTeam, awayTeam, channel' },
+        { success: false, error: 'Formato inválido. Usar { "input": "Equipo1 vs Equipo2: Canal1, Canal2" } o { "homeTeam", "awayTeam", "channel" }' },
         { status: 400 }
       )
     }
 
-    // Obtener fecha de hoy (inicio y fin del día)
+    if (matchesToProcess.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No se pudo parsear ningún partido del input' },
+        { status: 400 }
+      )
+    }
+
+    // Obtener fecha de hoy
     const today = new Date()
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
     const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
 
-    // Buscar el partido por nombres de equipos (búsqueda parcial, case insensitive)
-    const match = await prisma.match.findFirst({
-      where: {
-        matchDate: {
-          gte: startOfDay,
-          lt: endOfDay
-        },
-        homeTeam: {
-          name: {
-            contains: body.homeTeam,
-            mode: 'insensitive'
+    const results: any[] = []
+    const errors: any[] = []
+
+    for (const matchInput of matchesToProcess) {
+      try {
+        // Buscar el partido por nombres de equipos
+        const match = await prisma.match.findFirst({
+          where: {
+            matchDate: {
+              gte: startOfDay,
+              lt: endOfDay
+            },
+            homeTeam: {
+              name: {
+                contains: matchInput.homeTeam,
+                mode: 'insensitive'
+              }
+            },
+            awayTeam: {
+              name: {
+                contains: matchInput.awayTeam,
+                mode: 'insensitive'
+              }
+            }
+          },
+          include: {
+            homeTeam: true,
+            awayTeam: true,
+            league: true
           }
-        },
-        awayTeam: {
-          name: {
-            contains: body.awayTeam,
-            mode: 'insensitive'
-          }
+        })
+
+        if (!match) {
+          errors.push({
+            match: `${matchInput.homeTeam} vs ${matchInput.awayTeam}`,
+            error: 'Partido no encontrado'
+          })
+          continue
         }
-      },
-      include: {
-        homeTeam: true,
-        awayTeam: true,
-        league: true
+
+        // Obtener broadcasters existentes
+        const existingBroadcasters = (match.broadcasters as Broadcaster[]) || []
+
+        // Combinar: mantener existentes que no se estén agregando de nuevo
+        const newChannelNames = matchInput.broadcasters.map(b => b.channel.toLowerCase())
+        const filteredExisting = existingBroadcasters.filter(
+          b => !newChannelNames.includes(b.channel.toLowerCase())
+        )
+
+        const updatedBroadcasters = [...filteredExisting, ...matchInput.broadcasters]
+
+        await prisma.match.update({
+          where: { id: match.id },
+          data: {
+            broadcasters: updatedBroadcasters
+          }
+        })
+
+        results.push({
+          match: `${match.homeTeam.name} vs ${match.awayTeam.name}`,
+          broadcasters: updatedBroadcasters
+        })
+      } catch (error) {
+        errors.push({
+          match: `${matchInput.homeTeam} vs ${matchInput.awayTeam}`,
+          error: error instanceof Error ? error.message : 'Error desconocido'
+        })
       }
-    })
-
-    if (!match) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `No se encontró partido de hoy con ${body.homeTeam} vs ${body.awayTeam}`
-        },
-        { status: 404 }
-      )
     }
-
-    // Obtener broadcasters existentes
-    const existingBroadcasters = (match.broadcasters as any[]) || []
-
-    // Verificar si ya existe este canal Magic TV
-    const magicChannel = {
-      channel: `Magic TV ${body.channel}`,
-      type: 'magic' as const
-    }
-
-    const alreadyExists = existingBroadcasters.some(
-      (b: any) => b.type === 'magic' && b.channel === magicChannel.channel
-    )
-
-    if (alreadyExists) {
-      return NextResponse.json({
-        success: true,
-        message: `El canal ${magicChannel.channel} ya estaba agregado`,
-        match: {
-          id: match.id,
-          apiId: match.apiId,
-          homeTeam: match.homeTeam.name,
-          awayTeam: match.awayTeam.name,
-          league: match.league.name
-        },
-        broadcasters: existingBroadcasters
-      })
-    }
-
-    // Agregar el nuevo canal Magic TV (sin reemplazar los existentes)
-    const updatedBroadcasters = [...existingBroadcasters, magicChannel]
-
-    await prisma.match.update({
-      where: { id: match.id },
-      data: {
-        broadcasters: updatedBroadcasters
-      }
-    })
 
     return NextResponse.json({
       success: true,
-      message: `Canal ${magicChannel.channel} agregado a ${match.homeTeam.name} vs ${match.awayTeam.name}`,
-      match: {
-        id: match.id,
-        apiId: match.apiId,
-        homeTeam: match.homeTeam.name,
-        awayTeam: match.awayTeam.name,
-        league: match.league.name,
-        matchDate: match.matchDate
-      },
-      broadcasters: updatedBroadcasters
+      message: `Actualizados ${results.length} partidos, ${errors.length} errores`,
+      results,
+      errors
     })
   } catch (error) {
-    console.error('[API] Error in /api/admin/add-magic-tv:', error)
+    console.error('[API] Error in /api/admin/add-broadcasters:', error)
     return NextResponse.json(
       { success: false, error: 'Internal Server Error' },
       { status: 500 }
