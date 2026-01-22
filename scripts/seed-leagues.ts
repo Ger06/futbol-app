@@ -10,71 +10,15 @@ if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is not set in .env.local')
 }
 
-const leagues = [
-  {
-    apiId: 2,
-    name: 'UEFA Champions League',
-    country: 'World',
-    season: 2025,
-    logo: null,
-  },
-  {
-    apiId: 39,
-    name: 'Premier League',
-    country: 'England',
-    season: 2025,
-    logo: null,
-  },
-  {
-    apiId: 140,
-    name: 'La Liga',
-    country: 'Spain',
-    season: 2025,
-    logo: null,
-  },
-  {
-    apiId: 135,
-    name: 'Serie A',
-    country: 'Italy',
-    season: 2025,
-    logo: null,
-  },
-  {
-    apiId: 128,
-    name: 'Liga Profesional Argentina',
-    country: 'Argentina',
-    season: 2025,
-    logo: null,
-  },
-  {
-    apiId: 71,
-    name: 'Brasileirão Serie A',
-    country: 'Brazil',
-    season: 2025,
-    logo: null,
-  },
-  {
-    apiId: 78,
-    name: 'Bundesliga',
-    country: 'Germany',
-    season: 2025,
-    logo: null,
-  },
-  {
-    apiId: 253,
-    name: 'MLS',
-    country: 'USA',
-    season: 2025,
-    logo: null,
-  },
-  {
-    apiId: 61,
-    name: 'Ligue 1',
-    country: 'France',
-    season: 2025,
-    logo: null,
-  },
-]
+import { LEAGUES_CONFIG } from '../src/shared/constants/leagues'
+
+const leagues = LEAGUES_CONFIG.map(l => ({
+  apiId: l.id,
+  name: l.name,
+  country: l.country,
+  season: l.season,
+  logo: l.icon, // Using icon as logo placeholder if needed, or null if schema expects URL
+}))
 
 async function main() {
   console.log('🌱 Seeding leagues...\n')

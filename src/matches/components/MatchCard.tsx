@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { Card } from '@/shared/components/ui/Card'
 import { StatusBadge } from '@/shared/components/ui/Badge'
@@ -75,7 +75,6 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
   const broadcasters = dbBroadcasters || manualBroadcasters || leagueConfig?.broadcasters
 
 
-
   const cardContent = (
     <Card
       hoverable={clickable}
@@ -94,13 +93,28 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
           {/* Header con Liga y Status */}
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {match.league.logo && (
-                <img
-                  src={match.league.logo}
-                  alt={match.league.name}
-                  className="h-4 w-4 object-contain"
-                />
-              )}
+              {(() => {
+                 const logo = match.league.logo || leagueConfig?.icon
+                 if (!logo) return null
+
+                 const isUrl = logo.startsWith('http') || logo.startsWith('/')
+                 
+                 if (isUrl) {
+                   return (
+                    <img
+                      src={logo}
+                      alt={match.league.name}
+                      className="h-4 w-4 object-contain"
+                    />
+                   )
+                 }
+
+                 return (
+                   <span className="text-sm leading-none" role="img" aria-label={match.league.name}>
+                     {logo}
+                   </span>
+                 )
+              })()}
               <span className="text-xs font-semibold uppercase tracking-wider text-[#c5a059]">
                 {match.league.name}
               </span>
