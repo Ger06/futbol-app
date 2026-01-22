@@ -27,10 +27,19 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Obtener fecha de hoy (inicio y fin del día)
-    const today = new Date()
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
+    // Obtener fecha de hoy en hora Argentina (UTC-3)
+    const OFFSET_HOURS = -3
+    const now = new Date()
+    const argentinaTime = new Date(now.getTime() + (OFFSET_HOURS * 60 * 60 * 1000))
+
+    // Calcular inicio y fin del día en UTC (para comparar con matchDate que está en UTC)
+    const startOfDay = new Date(Date.UTC(
+      argentinaTime.getUTCFullYear(),
+      argentinaTime.getUTCMonth(),
+      argentinaTime.getUTCDate(),
+      -OFFSET_HOURS, 0, 0, 0 // Compensar el offset
+    ))
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000)
 
     // Buscar partidos del día que aún no han empezado
     const matches = await prisma.match.findMany({
