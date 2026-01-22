@@ -15,6 +15,7 @@ export interface StandingEntry {
   goalsAgainst: number
   goalDifference: number
   points: number
+  group: string // Grupo o Zona: "Group A", "Zona A", etc.
   form: string[] // "W", "D", "L"
 }
 

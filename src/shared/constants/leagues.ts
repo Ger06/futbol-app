@@ -96,7 +96,7 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     name: 'Liga Profesional Argentina',
     shortName: 'Argentina',
     country: 'Argentina',
-    season: 2025,
+    season: 2026,
     icon: '🧉', // User request: Mate
     color: '#75AADB',
     broadcasters: [

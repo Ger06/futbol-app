@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { prisma } from '../src/shared/lib/prisma'
 import { getFixtures, LEAGUE_IDS } from '../src/shared/lib/api-football'
+import { LEAGUES_CONFIG } from '../src/shared/constants/leagues'
 
 // Load .env.local file FIRST before importing Prisma Client
 dotenv.config({ path: path.join(__dirname, '../.env.local') })
@@ -45,7 +46,19 @@ async function seedFixtures() {
   let totalTeams = 0
   let totalGoals = 0
 
-  const leagueEntries = Object.entries(LEAGUE_IDS)
+  const filter = process.argv[2]?.toUpperCase()
+  let leagueEntries = Object.entries(LEAGUE_IDS)
+
+  if (filter) {
+    console.log(`🔎 Filtering leagues by: "${filter}"`)
+    leagueEntries = leagueEntries.filter(([key]) => key.includes(filter))
+    
+    if (leagueEntries.length === 0) {
+      console.error(`❌ No leagues found matching filter "${filter}"`)
+      console.log('   Available leagues:', Object.keys(LEAGUE_IDS).join(', '))
+      process.exit(1)
+    }
+  }
 
   for (let i = 0; i < leagueEntries.length; i++) {
     const [leagueName, leagueApiId] = leagueEntries[i]
@@ -54,7 +67,12 @@ async function seedFixtures() {
 
     try {
       // Obtener fixtures de API-Football
-      const response = await getFixtures(leagueApiId, 2022)
+      // Buscar la configuración de la liga para saber su temporada actual
+      const leagueConfig = Object.values(LEAGUES_CONFIG).find(l => l.id === leagueApiId)
+      const seasonToFetch = leagueConfig?.season || 2025 // Default to 2025 if not found
+
+      console.log(`   📅 Fetching season ${seasonToFetch}...`)
+      const response = await getFixtures(leagueApiId, seasonToFetch)
 
       if (!response.response || response.response.length === 0) {
         console.log(`   ℹ️  No fixtures found for ${leagueName}`)
