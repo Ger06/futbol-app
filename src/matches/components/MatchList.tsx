@@ -76,7 +76,16 @@ export function MatchList({
 
   return (
     <div className="space-y-12">
-      {Object.entries(groupedMatches).map(([leagueName, leagueMatches]) => (
+      {Object.entries(groupedMatches)
+        .sort(([leagueNameA], [leagueNameB]) => {
+          // Prioritize Argentina
+          const isArgA = leagueNameA.includes('Argentina') || leagueNameA.includes('Liga Profesional')
+          const isArgB = leagueNameB.includes('Argentina') || leagueNameB.includes('Liga Profesional')
+          if (isArgA && !isArgB) return -1
+          if (!isArgA && isArgB) return 1
+          return leagueNameA.localeCompare(leagueNameB)
+        })
+        .map(([leagueName, leagueMatches]) => (
         <div key={leagueName} className="relative">
           {/* Header de Liga */}
           <div className="mb-6 flex items-end gap-3 border-b-4 border-[#8a6d3b] pb-2 pl-2">

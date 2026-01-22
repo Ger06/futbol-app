@@ -72,6 +72,11 @@ model Match {
   venue         String?
   referee       String?
 
+  // Datos extendidos (Automation)
+  broadcasters  Json?     // Array de { url, channel }
+  highlight     String?   // "Ojo al dato" text
+  highlightType String?   // "MANUAL" | "AUTO"
+
   goals         Goal[]
   cards         Card[]
 

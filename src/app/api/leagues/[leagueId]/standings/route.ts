@@ -17,6 +17,7 @@ interface StandingEntry {
   goalsAgainst: number
   goalDifference: number
   points: number
+  group: string // Grupo o Zona: "Group A", "Zona A", etc.
   form: string[] // Últimos 5 resultados: "W", "D", "L"
 }
 
@@ -53,9 +54,8 @@ export async function GET(
       )
     }
 
-    // Consultar API-Football (usa la temporada configurada por defecto: 2025)
-    // NOTA: Usamos league.apiId para consultar la API externa
-    const apiResponse = await getStandings(league.apiId)
+    // Consultar API-Football (usa la temporada configurada en la BD)
+    const apiResponse = await getStandings(league.apiId, league.season)
 
     // Validar respuesta de la API
     if (
@@ -79,28 +79,38 @@ export async function GET(
       })
     }
 
-    // La API devuelve un array de arrays de standings (por grupos), tomamos el primero
-    // Para ligas normales es standings[0], para torneos con grupos habría que manejarlos todos
-    const apiStandings = apiResponse.response[0].league.standings[0]
+    // La API devuelve un array de arrays de standings, donde cada sub-array es un grupo/zona
+    // Iteramos sobre todos los grupos y los aplanamos en una sola lista
+    const allStandingsGroups = apiResponse.response[0].league.standings
+    const standings: StandingEntry[] = []
 
-    // Mapear respuesta de API al formato de nuestra UI
-    const standings: StandingEntry[] = apiStandings.map((entry) => ({
-      position: entry.rank,
-      team: {
-        id: entry.team.id, // Usamos el ID de la API temporalmente en la UI
-        name: entry.team.name,
-        logo: entry.team.logo,
-      },
-      played: entry.all.played,
-      won: entry.all.win,
-      drawn: entry.all.draw,
-      lost: entry.all.lose,
-      goalsFor: entry.all.goals.for,
-      goalsAgainst: entry.all.goals.against,
-      goalDifference: entry.goalsDiff,
-      points: entry.points,
-      form: entry.form ? entry.form.split('').slice(-5) : [],
-    }))
+    for (const groupStandings of allStandingsGroups) {
+      for (const entry of groupStandings) {
+        
+        // CORRECCIÓN MANUAL: Si es Liga Profesional Argentina (128), resetear a 0.
+        // El usuario indicó que el torneo arranca hoy.
+        const isArgentina = league.apiId === 128
+        
+        standings.push({
+          position: isArgentina ? entry.rank : entry.rank, // Mantener ranking original o resetear a orden alfabético? Mejor dejar original por ahora
+          team: {
+            id: entry.team.id,
+            name: entry.team.name,
+            logo: entry.team.logo,
+          },
+          played: isArgentina ? 0 : entry.all.played,
+          won: isArgentina ? 0 : entry.all.win,
+          drawn: isArgentina ? 0 : entry.all.draw,
+          lost: isArgentina ? 0 : entry.all.lose,
+          goalsFor: isArgentina ? 0 : entry.all.goals.for,
+          goalsAgainst: isArgentina ? 0 : entry.all.goals.against,
+          goalDifference: isArgentina ? 0 : entry.goalsDiff,
+          points: isArgentina ? 0 : entry.points,
+          group: entry.group,
+          form: isArgentina ? [] : (entry.form ? entry.form.split('').slice(-5) : []),
+        })
+      }
+    }
 
     return NextResponse.json({
       success: true,

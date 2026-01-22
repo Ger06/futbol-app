@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { Card } from '@/shared/components/ui/Card'
 import { StatusBadge } from '@/shared/components/ui/Badge'
@@ -69,8 +69,10 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
   const leagueId = match.league.apiId || match.league.id
   const leagueConfig = getLeagueById(leagueId)
   
-  const broadcasters = manualBroadcasters || leagueConfig?.broadcasters
-
+  // 3. Prioridad: BD > Manual > Liga
+  // Cast a any para evitar conflictos de tipo si match es de un tipo que aún no tiene broadcasters strict
+  const dbBroadcasters = (match as any).broadcasters as any[] | null
+  const broadcasters = dbBroadcasters || manualBroadcasters || leagueConfig?.broadcasters
 
 
   const cardContent = (
@@ -91,13 +93,28 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
           {/* Header con Liga y Status */}
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {match.league.logo && (
-                <img
-                  src={match.league.logo}
-                  alt={match.league.name}
-                  className="h-4 w-4 object-contain"
-                />
-              )}
+              {(() => {
+                 const logo = match.league.logo || leagueConfig?.icon
+                 if (!logo) return null
+
+                 const isUrl = logo.startsWith('http') || logo.startsWith('/')
+                 
+                 if (isUrl) {
+                   return (
+                    <img
+                      src={logo}
+                      alt={match.league.name}
+                      className="h-4 w-4 object-contain"
+                    />
+                   )
+                 }
+
+                 return (
+                   <span className="text-sm leading-none" role="img" aria-label={match.league.name}>
+                     {logo}
+                   </span>
+                 )
+              })()}
               <span className="text-xs font-semibold uppercase tracking-wider text-[#c5a059]">
                 {match.league.name}
               </span>
@@ -170,9 +187,10 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
 
           {/* Sección Ojo al Dato */}
           {(() => {
+            const dbHighlight = (match as any).highlight
             const manualHighlight = MATCH_HIGHLIGHTS[match.apiId?.toString()] || 
                                   MATCH_HIGHLIGHTS[`${match.homeTeam.code}-${match.awayTeam.code}`]
-            const highlight = manualHighlight || getAutomatedHighlight(match)
+            const highlight = dbHighlight || manualHighlight || getAutomatedHighlight(match)
             
             // Ocultar si ya hay eventos VISIBLES (goles o tarjetas rojas) que ocupen espacio
             const hasEvents = (match.goals && match.goals.length > 0) || 
@@ -190,7 +208,7 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
                       Ojo al dato
                     </h4>
                     <p className="font-oswald text-sm leading-tight text-[#f4f1ea]/90">
-                      {highlight.split(/(\d+%?|\d+\.\d+)/g).map((part, i) => 
+                      {highlight.split(/(\d+%?|\d+\.\d+)/g).map((part: string, i: number) => 
                         part.match(/(\d+%?|\d+\.\d+)/) ? <span key={i} className="font-bold text-[#f4f1ea]">{part}</span> : part
                       )}
                     </p>
@@ -202,7 +220,7 @@ export function MatchCard({ match, onClick, clickable = true }: MatchCardProps) 
         </div>
 
         {/* Broadcaster Column (Right Side) */}
-        {broadcasters && broadcasters.length > 0 && (
+        {match.status !== 'FT' && broadcasters && broadcasters.length > 0 && (
           <div className="flex flex-col justify-center items-center gap-2 border-l border-white/10 pl-4 min-w-[40px]">
              {broadcasters.map((item, index) => {
                const isObject = typeof item === 'object'
