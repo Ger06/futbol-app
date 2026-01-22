@@ -50,6 +50,9 @@ export const BROADCASTER_LOGOS: Record<string, string> = {
 
   // Magic TV (genérico para cualquier canal Magic)
   'magic': '/images/broadcasters/magic-tv.png',
+
+  // DirecTV
+  'directv': '/images/broadcasters/directv.png',
 }
 
 /**
