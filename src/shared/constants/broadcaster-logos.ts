@@ -9,8 +9,8 @@ export const BROADCASTER_LOGOS: Record<string, string> = {
   // ESPN
   'espn': '/images/broadcasters/espn.png',
   'espn premium': '/images/broadcasters/espn-premium.png',
-  'espn 2': '/images/broadcasters/espn.png',
-  'espn 3': '/images/broadcasters/espn.png',
+  'espn 2': '/images/broadcasters/espn2.png',
+  'espn 3': '/images/broadcasters/espn3.png',
 
   // TNT Sports
   'tnt sports': '/images/broadcasters/tnt-sports.png',
@@ -53,6 +53,9 @@ export const BROADCASTER_LOGOS: Record<string, string> = {
 
   // DirecTV
   'directv': '/images/broadcasters/directv.png',
+
+  // TV5Monde
+  'tv5monde': '/images/broadcasters/tv5monde.png',
 }
 
 /**
