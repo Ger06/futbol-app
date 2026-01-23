@@ -26,12 +26,17 @@ import type { MatchWithTeams } from '@/matches/types'
 
 export async function GET(request: NextRequest) {
   try {
-    const today = new Date()
+    const now = new Date()
+    // Ajustar "hoy" a la zona horaria de Argentina (UTC-3) para que no cambie de día a las 21:00
+    // Si es 00:09 UTC (21:09 ARG), queremos que "hoy" siga siendo el día anterior UTC.
+    const argentinaNow = new Date(now.getTime() - 3 * 60 * 60 * 1000)
+    
+    const today = new Date(argentinaNow)
     today.setHours(0, 0, 0, 0)
     const todayStr = today.toISOString().split('T')[0] // YYYY-MM-DD
 
     // Intentar obtener de cache
-    const cacheKey = `matches:today:v9:${todayStr}`
+    const cacheKey = `matches:today:v10:${todayStr}`
 
     const matches = await cacheOrFetch<MatchWithTeams[]>(
       cacheKey,
