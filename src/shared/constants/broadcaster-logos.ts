@@ -8,7 +8,7 @@
 export const BROADCASTER_LOGOS: Record<string, string> = {
   // ESPN
   'espn': '/images/broadcasters/espn.png',
-  'espn premium': '/images/broadcasters/espn.png',
+  'espn premium': '/images/broadcasters/espn-premium.png',
   'espn 2': '/images/broadcasters/espn.png',
   'espn 3': '/images/broadcasters/espn.png',
 
@@ -26,8 +26,8 @@ export const BROADCASTER_LOGOS: Record<string, string> = {
   'star plus': '/images/broadcasters/star-plus.png',
 
   // Disney+
-  'disney+': '/images/broadcasters/disney-plus.png',
-  'disney plus': '/images/broadcasters/disney-plus.png',
+  'disney+': '/images/broadcasters/disney+.png',
+  'disney plus': '/images/broadcasters/disney+.png',
 
   // TyC Sports
   'tyc sports': '/images/broadcasters/tyc-sports.png',

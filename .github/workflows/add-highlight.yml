@@ -1,0 +1,93 @@
+name: Add Highlight (Ojo al dato)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Modo: single (un partido) o bulk (varios)'
+        required: true
+        default: 'bulk'
+        type: choice
+        options:
+          - bulk
+          - single
+      input:
+        description: 'BULK: "River vs Boca: Dato 1 | Racing vs Indep: Dato 2"'
+        required: false
+        type: string
+      home_team:
+        description: 'SINGLE: Equipo local (ej: River)'
+        required: false
+        type: string
+      away_team:
+        description: 'SINGLE: Equipo visitante (ej: Boca)'
+        required: false
+        type: string
+      highlight:
+        description: 'SINGLE: El dato (ej: El local ganó 4 de los últimos 5)'
+        required: false
+        type: string
+
+jobs:
+  add-highlight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Add highlight to matches
+        run: |
+          echo "Modo: ${{ github.event.inputs.mode }}"
+          echo ""
+
+          if [ "${{ github.event.inputs.mode }}" == "bulk" ]; then
+            echo "Procesando múltiples partidos..."
+            echo "Input: ${{ github.event.inputs.input }}"
+
+            PAYLOAD=$(jq -n --arg input "${{ github.event.inputs.input }}" '{input: $input}')
+          else
+            echo "Procesando partido individual..."
+            echo "${{ github.event.inputs.home_team }} vs ${{ github.event.inputs.away_team }}"
+            echo "Dato: ${{ github.event.inputs.highlight }}"
+
+            PAYLOAD=$(jq -n \
+              --arg home "${{ github.event.inputs.home_team }}" \
+              --arg away "${{ github.event.inputs.away_team }}" \
+              --arg highlight "${{ github.event.inputs.highlight }}" \
+              '{homeTeam: $home, awayTeam: $away, highlight: $highlight}')
+          fi
+
+          echo ""
+          echo "Payload: $PAYLOAD"
+          echo ""
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ secrets.SITE_URL }}/api/admin/add-highlight" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_CODE" == "200" ]; then
+            echo ""
+            echo "=== Resultado ==="
+            echo "$BODY" | jq -r '.message // "OK"'
+            echo ""
+            echo "Partidos actualizados:"
+            echo "$BODY" | jq -r '.results[]? | "\(.match): \(.highlight)"'
+
+            if [ "$(echo "$BODY" | jq -r '.errors | length')" != "0" ]; then
+              echo ""
+              echo "Errores:"
+              echo "$BODY" | jq -r '.errors[]? | "\(.match): \(.error)"'
+            fi
+          else
+            echo ""
+            echo "=== Error ==="
+            echo "$BODY" | jq -r '.error // "Error desconocido"'
+            exit 1
+          fi
