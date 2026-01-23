@@ -28,17 +28,16 @@ export async function GET(request: NextRequest) {
 
   try {
     // Obtener fecha de hoy en hora Argentina (UTC-3)
-    const OFFSET_HOURS = -3
+    // Misma lógica que matches/today para consistencia
     const now = new Date()
-    const argentinaTime = new Date(now.getTime() + (OFFSET_HOURS * 60 * 60 * 1000))
+    const argentinaNow = new Date(now.getTime() - 3 * 60 * 60 * 1000)
 
-    // Calcular inicio y fin del día en UTC (para comparar con matchDate que está en UTC)
-    const startOfDay = new Date(Date.UTC(
-      argentinaTime.getUTCFullYear(),
-      argentinaTime.getUTCMonth(),
-      argentinaTime.getUTCDate(),
-      -OFFSET_HOURS, 0, 0, 0 // Compensar el offset
-    ))
+    const today = new Date(argentinaNow)
+    today.setHours(0, 0, 0, 0)
+    const todayStr = today.toISOString().split('T')[0] // YYYY-MM-DD
+
+    // Rango del día en hora Argentina (00:00 a 23:59 ARG = 03:00 a 02:59 UTC)
+    const startOfDay = new Date(todayStr + 'T03:00:00.000Z') // 00:00 ARG = 03:00 UTC
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000)
 
     // Buscar partidos del día que aún no han empezado

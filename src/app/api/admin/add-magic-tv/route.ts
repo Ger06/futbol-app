@@ -113,10 +113,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Obtener fecha de hoy
-    const today = new Date()
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
+    // Obtener fecha de hoy en hora Argentina (UTC-3)
+    const now = new Date()
+    const argentinaNow = new Date(now.getTime() - 3 * 60 * 60 * 1000)
+
+    const today = new Date(argentinaNow)
+    today.setHours(0, 0, 0, 0)
+    const todayStr = today.toISOString().split('T')[0]
+
+    // Rango del día en hora Argentina
+    const startOfDay = new Date(todayStr + 'T03:00:00.000Z') // 00:00 ARG = 03:00 UTC
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000)
 
     const results: any[] = []
     const errors: any[] = []
