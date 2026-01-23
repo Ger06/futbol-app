@@ -31,18 +31,25 @@ interface StandingsResponse {
   totalMatches: number
 }
 
+export interface UseStandingsOptions {
+  staleTime?: number
+  refetchInterval?: number | false
+}
+
 /**
  * Hook para obtener la tabla de posiciones de una liga
  *
  * @param leagueId - ID de la liga (de nuestra DB, no API-Football)
- * @param enabled - Si la query debe ejecutarse (por defecto true)
+ * @param options - Opciones de configuración (staleTime, refetchInterval, etc.)
  *
  * @example
  * ```tsx
- * const { data: standings, isLoading, error } = useStandings(1)
+ * const { data: standings } = useStandings(1, { refetchInterval: 60000 })
  * ```
  */
-export function useStandings(leagueId: number, enabled = true) {
+export function useStandings(leagueId: number, options: UseStandingsOptions = {}) {
+  const { staleTime = 1000 * 60 * 60, refetchInterval = false } = options
+
   return useQuery<StandingEntry[], Error>({
     queryKey: ['standings', leagueId],
     queryFn: async () => {
@@ -56,9 +63,10 @@ export function useStandings(leagueId: number, enabled = true) {
       const json: StandingsResponse = await response.json()
       return json.data
     },
-    enabled: enabled && leagueId > 0,
-    staleTime: 1000 * 60 * 60, // 1 hora (las posiciones cambian lentamente)
+    enabled: leagueId > 0,
+    staleTime, 
     gcTime: 1000 * 60 * 60 * 2, // 2 horas en cache
+    refetchInterval,
   })
 }
 
@@ -74,7 +82,9 @@ export function useStandings(leagueId: number, enabled = true) {
  * ```
  */
 export function useStandingsPreview(leagueId: number, limit = 5) {
-  const { data, ...rest } = useStandings(leagueId)
+  const { data, ...rest } = useStandings(leagueId, {
+    staleTime: 1000 * 60 * 60 // Keep 1 hour for preview, no need for live updates there
+  })
 
   return {
     data: data?.slice(0, limit),

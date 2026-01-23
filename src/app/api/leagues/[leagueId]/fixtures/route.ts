@@ -77,76 +77,106 @@ export async function GET(
       whereClause.round = roundParam
     }
 
-    // Checking if we need to fetch from API (Self-healing)
-    // If we have very few matches, we probably only have "today's" matches but not the full fixture
+    // Checking if we need to fetch from API (Self-healing & Freshness)
     const matchesCount = await prisma.match.count({
       where: { leagueId: leagueIdNum }
     })
 
-    if (matchesCount < 20 && league.apiId) {
-       console.log(`[API] League ${leagueIdNum} has incomplete fixtures (${matchesCount}). Fetching full season...`)
+    const lastUpdatedMatch = await prisma.match.findFirst({
+      where: { leagueId: leagueIdNum },
+      orderBy: { updatedAt: 'desc' },
+      select: { updatedAt: true }
+    })
+
+    const isStale = !lastUpdatedMatch || (Date.now() - lastUpdatedMatch.updatedAt.getTime() > 1000 * 60 * 5) // 5 minutes
+    const isArgentina = league.apiId === 128 // Prioritize freshness for active requested league
+
+    if ((matchesCount < 20 || (isArgentina && isStale)) && league.apiId) {
+       console.log(`[API] League ${leagueIdNum} fixtures outdated (Count: ${matchesCount}, Stale: ${isStale}). Syncing full season...`)
        try {
          const response = await getFixtures(league.apiId, league.season)
          
          if (response && response.response) {
             const fixtures = response.response
             
-            // Process in chunks or sequentially to avoid overwhelming DB
-            for (const fixture of fixtures) {
-                 // Upsert Teams
-                 const homeTeam = await prisma.team.upsert({
-                    where: { apiId: fixture.teams.home.id },
-                    update: { name: fixture.teams.home.name, logo: fixture.teams.home.logo },
-                    create: {
-                        apiId: fixture.teams.home.id,
-                        name: fixture.teams.home.name,
-                        logo: fixture.teams.home.logo,
-                        code: fixture.teams.home.name.substring(0, 3).toUpperCase()
-                    }
-                 })
+            // Sync in a transaction or batch to ensure consistency? 
+            // Loop is fine for now but let's prevent timeout by not awaiting every single upsert strictly if we can, 
+            // BUT we want to return fresh data, so we must await.
+            
+            // Optimization: Fetch all existing teams to minimize upserts?
+            // For now, keep logic simple but reliable.
+            
+            const mapStatus = (status: string): string => {
+                const statusMap: Record<string, string> = {
+                  TBD: 'NS', NS: 'NS', '1H': 'LIVE', HT: 'HT', '2H': 'LIVE',
+                  ET: 'LIVE', P: 'LIVE', FT: 'FT', AET: 'AET', PEN: 'PEN',
+                  PST: 'PST', CANC: 'CANC', ABD: 'ABD', AWD: 'FT', WO: 'FT',
+                }
+                return statusMap[status] || 'NS'
+            }
 
-                 const awayTeam = await prisma.team.upsert({
-                    where: { apiId: fixture.teams.away.id },
-                    update: { name: fixture.teams.away.name, logo: fixture.teams.away.logo },
-                    create: {
-                        apiId: fixture.teams.away.id,
-                        name: fixture.teams.away.name,
-                        logo: fixture.teams.away.logo,
-                        code: fixture.teams.away.name.substring(0, 3).toUpperCase()
-                    }
-                 })
+            // We use a transaction for matches to succeed or fail together? 
+            // Upserting 480 records one by one is slow.
+            // Prisma `createMany` specific for 'skipDuplicates' might not work for updates.
+            // We'll stick to loop but maybe parallelize chunks.
+            
+            const chunks = [];
+            const chunkSize = 50; 
+            for (let i = 0; i < fixtures.length; i += chunkSize) {
+                chunks.push(fixtures.slice(i, i + chunkSize));
+            }
 
-                 // Map Status
-                 const mapStatus = (status: string): string => {
-                    const statusMap: Record<string, string> = {
-                      TBD: 'NS', NS: 'NS', '1H': 'LIVE', HT: 'HT', '2H': 'LIVE',
-                      ET: 'LIVE', P: 'LIVE', FT: 'FT', AET: 'AET', PEN: 'PEN',
-                      PST: 'PST', CANC: 'CANC', ABD: 'ABD', AWD: 'FT', WO: 'FT',
-                    }
-                    return statusMap[status] || 'NS'
-                  }
+            for (const chunk of chunks) {
+                await Promise.all(chunk.map(async (fixture) => {
+                     // Upsert Teams (cached locally or upserted) - simplifying to avoid complexity in this snippet
+                     // We assume teams exist or we upsert them. 
+                     // To speed up, we can ignore team updates if name matches?
+                     // Let's just do the upsert, it's safer.
+                     
+                     const homeTeam = await prisma.team.upsert({
+                        where: { apiId: fixture.teams.home.id },
+                        update: { name: fixture.teams.home.name, logo: fixture.teams.home.logo },
+                        create: {
+                            apiId: fixture.teams.home.id,
+                            name: fixture.teams.home.name,
+                            logo: fixture.teams.home.logo,
+                            code: fixture.teams.home.name.substring(0, 3).toUpperCase()
+                        }
+                     })
 
-                 // Upsert Match
-                 await prisma.match.upsert({
-                    where: { apiId: fixture.fixture.id },
-                    update: {
-                        status: mapStatus(fixture.fixture.status.short),
-                        homeScore: fixture.goals.home,
-                        awayScore: fixture.goals.away,
-                        round: fixture.league.round
-                    },
-                    create: {
-                        apiId: fixture.fixture.id,
-                        leagueId: league.id,
-                        homeTeamId: homeTeam.id,
-                        awayTeamId: awayTeam.id,
-                        matchDate: new Date(fixture.fixture.date),
-                        status: mapStatus(fixture.fixture.status.short),
-                        homeScore: fixture.goals.home,
-                        awayScore: fixture.goals.away,
-                        round: fixture.league.round
-                    }
-                 })
+                     const awayTeam = await prisma.team.upsert({
+                        where: { apiId: fixture.teams.away.id },
+                        update: { name: fixture.teams.away.name, logo: fixture.teams.away.logo },
+                        create: {
+                            apiId: fixture.teams.away.id,
+                            name: fixture.teams.away.name,
+                            logo: fixture.teams.away.logo,
+                            code: fixture.teams.away.name.substring(0, 3).toUpperCase()
+                        }
+                     })
+
+                     await prisma.match.upsert({
+                        where: { apiId: fixture.fixture.id },
+                        update: {
+                            status: mapStatus(fixture.fixture.status.short),
+                            homeScore: fixture.goals.home,
+                            awayScore: fixture.goals.away,
+                            round: fixture.league.round,
+                            updatedAt: new Date() // Force update timestamp
+                        },
+                        create: {
+                            apiId: fixture.fixture.id,
+                            leagueId: league.id,
+                            homeTeamId: homeTeam.id,
+                            awayTeamId: awayTeam.id,
+                            matchDate: new Date(fixture.fixture.date),
+                            status: mapStatus(fixture.fixture.status.short),
+                            homeScore: fixture.goals.home,
+                            awayScore: fixture.goals.away,
+                            round: fixture.league.round
+                        }
+                     })
+                }))
             }
             console.log(`[API] Successfully synced ${fixtures.length} fixtures for league ${leagueIdNum}`)
          }
@@ -227,17 +257,16 @@ export async function GET(
       })
     })
 
-    // Ordenar jornadas (intentar extraer número si es posible)
+    // Ordenar jornadas por fecha del primer partido
     fixturesByRound.sort((a, b) => {
-      // Intentar extraer número de la jornada (ej: "Jornada 10" -> 10)
-      const matchA = a.round.match(/\d+/)
-      const matchB = b.round.match(/\d+/)
-
-      if (matchA && matchB) {
-        return parseInt(matchA[0], 10) - parseInt(matchB[0], 10)
+      const dateA = a.matches.length > 0 ? new Date(a.matches[0].matchDate).getTime() : 0
+      const dateB = b.matches.length > 0 ? new Date(b.matches[0].matchDate).getTime() : 0
+      
+      if (dateA !== dateB) {
+        return dateA - dateB
       }
-
-      // Si no hay número, ordenar alfabéticamente
+      
+      // Fallback a orden alfabético si las fechas son idénticas
       return a.round.localeCompare(b.round)
     })
 

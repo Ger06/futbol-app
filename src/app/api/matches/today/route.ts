@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const todayStr = today.toISOString().split('T')[0] // YYYY-MM-DD
 
     // Intentar obtener de cache
-    const cacheKey = `matches:today:v10:${todayStr}`
+    const cacheKey = `matches:today:v11:${todayStr}`
 
     const matches = await cacheOrFetch<MatchWithTeams[]>(
       cacheKey,
@@ -96,16 +96,30 @@ export async function GET(request: NextRequest) {
               const matchDayStr = localMatchDate.toISOString().split('T')[0]
               const todayDayStr = localToday.toISOString().split('T')[0]
               
-              const isSameDay = matchDayStr === todayDayStr
-              
-              // Debug logging para entender qué se queda y qué se va
-              if (!isSameDay) {
-                //console.log(`[Filter] Excluding ${fixture.teams.home.name} vs ${fixture.teams.away.name} (${matchDayStr} local != ${todayDayStr})`)
-              } else {
-                //console.log(`[Filter] Including ${fixture.teams.home.name} vs ${fixture.teams.away.name} (${matchDayStr} local)`)
-              }
+              // Calcular "ayer" local
+              const localYesterday = new Date(localToday)
+              localYesterday.setDate(localYesterday.getDate() - 1)
+              const yesterdayDayStr = localYesterday.toISOString().split('T')[0]
 
-              return isSameDay
+              const isSameDay = matchDayStr === todayDayStr
+              const isYesterday = matchDayStr === yesterdayDayStr
+
+              // Lógica de "Soft Midnight":
+              // Si es de ayer, lo mantenemos SOLO SI el partido empezó hace menos de 5 horas.
+              // Esto permite ver partidos de las 22:00 hs hasta las 03:00 hs del día siguiente.
+              let shouldKeepYesterday = false
+              if (isYesterday) {
+                  const diffMs = now.getTime() - matchDate.getTime()
+                  const hoursSinceStart = diffMs / (1000 * 60 * 60)
+                  // Mantenemos si empezó hace menos de 5 horas (partido dura ~2h + 3h de visibilidad post-partido)
+                  if (hoursSinceStart < 5) {
+                      shouldKeepYesterday = true
+                  }
+              }
+              
+              const keep = isSameDay || shouldKeepYesterday
+
+              return keep
             })
             
             relevantFixtures = matchesToShow
