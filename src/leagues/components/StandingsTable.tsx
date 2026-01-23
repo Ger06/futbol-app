@@ -16,7 +16,10 @@ export function StandingsTable({
   leagueId,
   showForm = true,
 }: StandingsTableProps) {
-  const { data: standings, isLoading, error } = useStandings(leagueId)
+  const { data: standings, isLoading, error } = useStandings(leagueId, {
+    staleTime: 1000 * 60, // 1 minuto
+    refetchInterval: 1000 * 60 // 1 minuto
+  })
 
   const groupedStandings = useMemo(() => {
     if (!standings) return {}
