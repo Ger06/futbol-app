@@ -56,6 +56,9 @@ export const BROADCASTER_LOGOS: Record<string, string> = {
 
   // TV5Monde
   'tv5monde': '/images/broadcasters/tv5monde.png',
+
+  // Premiere
+  'premiere': '/images/broadcasters/premiere.png',
 }
 
 /**
