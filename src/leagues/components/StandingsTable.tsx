@@ -1,7 +1,7 @@
 'use client'
 
 // ... imports ...
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { useStandings } from '@/leagues/hooks'
 import { LoadingSection } from '@/shared/components/ui/LoadingSpinner'
@@ -20,6 +20,10 @@ export function StandingsTable({
     staleTime: 1000 * 60, // 1 minuto
     refetchInterval: 1000 * 60 // 1 minuto
   })
+
+  useEffect(() => {
+    console.log('leagueId', leagueId)
+  }, [leagueId])
 
   const groupedStandings = useMemo(() => {
     if (!standings) return {}
@@ -134,7 +138,28 @@ export function StandingsTable({
               {groupStandings.map((entry, index) => {
                 // Determinar color de fondo para zonas especiales
                 let rowClass = 'hover:bg-[#2c241b]/50 border-b border-[#8a6d3b]/20 transition-colors'
+                if (leagueId === 5) {
+                  // Champions League: Dorado translúcido
+                  if (entry.position <= 8) {
+                    rowClass = 'bg-[#c5a059]/10 hover:bg-[#c5a059]/20 border-b border-[#8a6d3b]/30 transition-colors'
+                  }
+              
+                }
+                else if (leagueId === 1) {
+                  if (entry.position <= 8) {
+                  rowClass = 'bg-[#c5a059]/10 hover:bg-[#c5a059]/20 border-b border-[#8a6d3b]/30 transition-colors'
+                }
+                // Europa League: Verde translúcido
+                else if (entry.position <= 24) {
+                  rowClass = 'bg-[#1a472a]/20 hover:bg-[#1a472a]/30 border-b border-[#8a6d3b]/20 transition-colors'
+                }
+                // Descenso: Rojo oscuro translúcido
+                else if (entry.position > groupStandings.length - 4) {
+                  rowClass = 'bg-[#4a1c1c]/30 hover:bg-[#4a1c1c]/40 border-b border-[#8a6d3b]/20 transition-colors'
+                }
+                }
                 
+                else{
                 // Champions League: Dorado translúcido
                 if (entry.position <= 4) {
                   rowClass = 'bg-[#c5a059]/10 hover:bg-[#c5a059]/20 border-b border-[#8a6d3b]/30 transition-colors'
@@ -147,7 +172,7 @@ export function StandingsTable({
                 else if (entry.position > groupStandings.length - 3) {
                   rowClass = 'bg-[#4a1c1c]/30 hover:bg-[#4a1c1c]/40 border-b border-[#8a6d3b]/20 transition-colors'
                 }
-
+                }
                 return (
                   <tr
                     key={entry.team.id}
@@ -240,15 +265,15 @@ export function StandingsTable({
           <div className="flex flex-wrap gap-4 text-xs font-oswald text-[#e6c885]/80">
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded bg-[#c5a059]/40 border border-[#c5a059]"></div>
-              <span>Champions League / Play-off</span>
+              <span>{leagueId === 5 ? 'Play-off' : leagueId === 1 ? 'Octavos de final' : 'Champions League / Play-off'}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded bg-[#1a472a]/60 border border-[#1a472a]"></div>
-              <span>Copas Internacionales</span>
+              <span>{leagueId === 1 && 'Play-off'}{leagueId !== 5 && leagueId !== 1 && 'Copas Internacionales'}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded bg-[#4a1c1c]/60 border border-[#4a1c1c]"></div>
-              <span>Descenso</span>
+              <span>{leagueId !== 5 && leagueId !== 1 && 'Descenso'} {leagueId === 1 && 'Eliminado'}</span>
             </div>
           </div>
         </div>

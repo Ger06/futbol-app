@@ -63,8 +63,7 @@ export async function GET(
       const fixturesResponse = await getFixtures(league.apiId, league.season)
       
       if (fixturesResponse && fixturesResponse.response) {
-        // Filtrar fixtures que son parte de la liga "Regular" (no playoffs viejos si los hubiera mezclados, aunque la API suele separar por season)
-        // Por ahora usamos todos los de la season que la API devuelve
+        // ... calculation logic ...
         const computedStandings = computeStandingsFromFixtures(fixturesResponse.response)
         
         return NextResponse.json({
@@ -111,9 +110,17 @@ export async function GET(
     const allStandingsGroups = apiResponse.response[0].league.standings
     const standings: StandingEntry[] = []
 
-    for (const groupStandings of allStandingsGroups) {
+    allStandingsGroups.forEach((groupStandings, index) => {
       for (const entry of groupStandings) {
         
+        let groupName = entry.group
+        // Corregir nombres de zona para Argentina si la API devuelve nombres genéricos "Apertura"
+        if (league.apiId === 128 && allStandingsGroups.length > 1) {
+           // Asumimos que el primer grupo es Zona A y el segundo Zona B
+           if (index === 0) groupName = 'Zona A'
+           if (index === 1) groupName = 'Zona B'
+        }
+
         standings.push({
           position: entry.rank,
           team: {
@@ -129,11 +136,11 @@ export async function GET(
           goalsAgainst: entry.all.goals.against,
           goalDifference: entry.goalsDiff,
           points: entry.points,
-          group: entry.group,
+          group: groupName,
           form: entry.form ? entry.form.split('').slice(-5) : [],
         })
       }
-    }
+    })
 
     return NextResponse.json({
       success: true,

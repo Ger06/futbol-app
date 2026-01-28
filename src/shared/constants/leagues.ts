@@ -23,6 +23,20 @@ export interface LeagueConfig {
  */
 export const LEAGUES_CONFIG: LeagueConfig[] = [
   {
+    id: 128, // Liga Profesional Argentina
+    slug: 'liga-argentina',
+    name: 'Liga Profesional Argentina',
+    shortName: 'Argentina',
+    country: 'Argentina',
+    season: 2026,
+    icon: '🧉', // User request: Mate
+    color: '#75AADB',
+    broadcasters: [
+      // 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/TyC_Sports_logo.svg/100px-TyC_Sports_logo.svg.png',
+      // 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'
+    ],
+  },
+  {
     id: 2, // UEFA Champions League
     slug: 'champions-league',
     name: 'UEFA Champions League',
@@ -64,6 +78,19 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     ],
   },
   {
+    id: 135, // Serie A
+    slug: 'serie-a',
+    name: 'Serie A',
+    shortName: 'Serie A',
+    country: 'Italia',
+    season: 2025,
+    icon: '🍝', // Pizza (Representative)
+    color: '#024494',
+    broadcasters: [
+      // 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'
+    ],
+  },
+  {
     id: 78, // Bundesliga
     slug: 'bundesliga',
     name: 'Bundesliga',
@@ -78,30 +105,15 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     ],
   },
   {
-    id: 135, // Serie A
-    slug: 'serie-a',
-    name: 'Serie A',
-    shortName: 'Serie A',
-    country: 'Italia',
+    id: 61, // Ligue 1
+    slug: 'ligue-1',
+    name: 'Ligue 1',
+    shortName: 'Ligue 1',
+    country: 'Francia',
     season: 2025,
-    icon: '🍝', // Pizza (Representative)
-    color: '#024494',
+    icon: '🥐', // Croissant (Representative)
+    color: '#DAE2F3',
     broadcasters: [
-      // 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'
-    ],
-  },
-  {
-    id: 128, // Liga Profesional Argentina
-    slug: 'liga-argentina',
-    name: 'Liga Profesional Argentina',
-    shortName: 'Argentina',
-    country: 'Argentina',
-    season: 2026,
-    icon: '🧉', // User request: Mate
-    color: '#75AADB',
-    broadcasters: [
-      // 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/TyC_Sports_logo.svg/100px-TyC_Sports_logo.svg.png',
-      // 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png'
     ],
   },
   {
@@ -126,18 +138,6 @@ export const LEAGUES_CONFIG: LeagueConfig[] = [
     season: 2025,
     icon: '🗽', // Statue of Liberty (Representative)
     color: '#C2C2C2',
-    broadcasters: [
-    ],
-  },
-  {
-    id: 61, // Ligue 1
-    slug: 'ligue-1',
-    name: 'Ligue 1',
-    shortName: 'Ligue 1',
-    country: 'Francia',
-    season: 2025,
-    icon: '🥐', // Croissant (Representative)
-    color: '#DAE2F3',
     broadcasters: [
     ],
   },
