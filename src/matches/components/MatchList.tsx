@@ -3,6 +3,7 @@
 import React from 'react'
 import { MatchCard } from './MatchCard'
 import type { MatchWithTeams } from '@/matches/types'
+import { LEAGUES_CONFIG } from '@/shared/constants/leagues'
 
 interface MatchListProps {
   matches: MatchWithTeams[]
@@ -77,13 +78,21 @@ export function MatchList({
   return (
     <div className="space-y-12">
       {Object.entries(groupedMatches)
-        .sort(([leagueNameA], [leagueNameB]) => {
-          // Prioritize Argentina
-          const isArgA = leagueNameA.includes('Argentina') || leagueNameA.includes('Liga Profesional')
-          const isArgB = leagueNameB.includes('Argentina') || leagueNameB.includes('Liga Profesional')
-          if (isArgA && !isArgB) return -1
-          if (!isArgA && isArgB) return 1
-          return leagueNameA.localeCompare(leagueNameB)
+        .sort(([, matchesA], [, matchesB]) => {
+          // Get League API IDs for reliable sorting
+          // We prioritize apiId, but fallback to id if apiId is missing (though it shouldn't be for configured leagues)
+          const idA = matchesA[0].league.apiId || matchesA[0].league.id
+          const idB = matchesB[0].league.apiId || matchesB[0].league.id
+
+          // Find index in LEAGUES_CONFIG
+          const indexA = LEAGUES_CONFIG.findIndex((l) => l.id === idA)
+          const indexB = LEAGUES_CONFIG.findIndex((l) => l.id === idB)
+
+          // If not found (e.g. unknown league), put at the end
+          const safeIndexA = indexA === -1 ? 999 : indexA
+          const safeIndexB = indexB === -1 ? 999 : indexB
+
+          return safeIndexA - safeIndexB
         })
         .map(([leagueName, leagueMatches]) => (
         <div key={leagueName} className="relative">

@@ -82,7 +82,7 @@ export function StatusBadge({ status, theme = 'default', elapsed }: { status: st
       const retroPadding = { padding: '4px 12px' }
       switch (status) {
         case 'NS':
-          return { variant: 'default', text: 'Por Jugar', className: 'bg-[#1a120b] text-[#c5a059] border-[#8a6d3b]', style: retroPadding }
+          return { variant: 'default', text: 'Por Jugar', className: 'hidden bg-[#1a120b] text-[#c5a059] border-[#8a6d3b]', style: retroPadding }
         case 'LIVE':
           const liveText = elapsed ? `EN VIVO ${elapsed}'` : 'EN VIVO'
           return { variant: 'danger', text: liveText, className: 'bg-[#ef4444] text-white border-[#991b1b] animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.6)]', style: retroPadding }
