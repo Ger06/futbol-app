@@ -13,12 +13,12 @@ export type Broadcaster = string | { url: string; channel: string }
 export const MATCH_BROADCASTERS: Record<string, Broadcaster[]> = {
   // Ejemplo por ID (apiId) de partido (prioridad alta)
   // Ejemplo por ID (apiId) de partido (prioridad alta)
-  '1451137': [
+  'rac-ros': [
     'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/ESPN_wordmark.svg/100px-ESPN_wordmark.svg.png',
-    'https://upload.wikimedia.org/wikipedia/commons/b/b2/Fox_Sports_Argentina_2023.svg',
+//'https://upload.wikimedia.org/wikipedia/commons/b/b2/Fox_Sports_Argentina_2023.svg',
     { 
       url: 'https://magistv.bio/wp-content/uploads/2024/07/magistv-logo.webp', 
-      channel: '336' 
+      channel: '296' 
     }
   ],
   // '1451137': ['https://upload.wikimedia.org/wikipedia/commons/b/b2/Fox_Sports_Argentina_2023.svg']
